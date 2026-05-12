@@ -44,7 +44,7 @@ export default function RootLayout() {
           headerStyle: {
             backgroundColor: theme.colors.background,
           },
-          headerTintColor: theme.colors.onSurface,
+          headerTintColor: theme.colors.background,
           headerTitleStyle: {
             fontFamily: theme.typography.headlineMd.fontFamily,
           },

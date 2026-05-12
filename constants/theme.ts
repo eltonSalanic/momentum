@@ -1,52 +1,24 @@
 export const theme = {
   colors: {
-    surface: "#121414",
-    surfaceDim: "#121414",
-    surfaceBright: "#37393a",
-    surfaceContainerLowest: "#0c0f0f",
-    surfaceContainerLow: "#1a1c1c",
-    surfaceContainer: "#1e2020",
-    surfaceContainerHigh: "#282a2b",
-    surfaceContainerHighest: "#333535",
-    onSurface: "#e2e2e2",
-    onSurfaceVariant: "#c5c6cd",
-    inverseSurface: "#e2e2e2",
-    inverseOnSurface: "#2f3131",
-    outline: "#8f9097",
-    outlineVariant: "#44474d",
-    surfaceTint: "#b9c7e4",
-    primary: "#b9c7e4",
-    onPrimary: "#233148",
-    primaryContainer: "#0a192f",
-    onPrimaryContainer: "#74829d",
-    inversePrimary: "#515f78",
-    secondary: "#b7c8e1",
-    onSecondary: "#213145",
-    secondaryContainer: "#3a4a5f",
-    onSecondaryContainer: "#a9bad3",
-    tertiary: "#e7bf99",
-    onTertiary: "#432b10",
-    tertiaryContainer: "#281400",
-    onTertiaryContainer: "#9d7b5a",
-    error: "#ffb4ab",
-    onError: "#690005",
-    errorContainer: "#93000a",
-    onErrorContainer: "#ffdad6",
-    primaryFixed: "#d6e3ff",
-    primaryFixedDim: "#b9c7e4",
-    onPrimaryFixed: "#0d1c32",
-    onPrimaryFixedVariant: "#39475f",
-    secondaryFixed: "#d3e4fe",
-    secondaryFixedDim: "#b7c8e1",
-    onSecondaryFixed: "#0b1c30",
-    onSecondaryFixedVariant: "#38485d",
-    tertiaryFixed: "#ffdcbd",
-    tertiaryFixedDim: "#e7bf99",
-    onTertiaryFixed: "#2b1701",
-    onTertiaryFixedVariant: "#5d4124",
+    // Base
     background: "#121414",
-    onBackground: "#e2e2e2",
-    surfaceVariant: "#333535",
+    surface: "#0A192F",
+    surfaceVariant: "#1E2020",
+
+    // Brand
+    primary: "#B9C7E4",
+    onPrimary: "#233148",
+    secondary: "#64748B",
+    onSecondary: "#FFFFFF",
+
+    // Text
+    text: "#E2E2E2",
+    textMuted: "#C5C6CD",
+
+    // Feedback & UI
+    outline: "rgba(100, 116, 139, 0.2)", // #64748B at 20% opacity
+    error: "#FFB4AB",
+    success: "#B9C7E4",
   },
   typography: {
     display: {
@@ -80,13 +52,13 @@ export const theme = {
       letterSpacing: 0,
     },
     labelMd: {
-      fontFamily: "Inter_500Medium", // Fallback for Geist
+      fontFamily: "Inter_500Medium",
       fontSize: 14,
       lineHeight: 20,
       letterSpacing: 0.28,
     },
     labelSm: {
-      fontFamily: "Inter_600SemiBold", // Fallback for Geist
+      fontFamily: "Inter_600SemiBold",
       fontSize: 12,
       lineHeight: 16,
       letterSpacing: 0.6,

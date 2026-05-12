@@ -9,7 +9,7 @@ interface ThemedTextProps extends TextProps {
 
 export const ThemedText = ({
   variant = "bodyMd",
-  color = "onSurface",
+  color = "text",
   style,
   ...props
 }: ThemedTextProps) => {
