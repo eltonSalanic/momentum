@@ -1,15 +1,11 @@
-import { Text, View } from "react-native";
+import { ThemedText } from "@/components/ui/ThemedText";
+import { ThemedView } from "../components/ui/ThemedView";
 
 export default function Index() {
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Text>Edit app/index.tsx to edit this screen</Text>
-    </View>
+    <ThemedView style={{ flex: 1 }}>
+      {/* Start building your blank canvas here */}
+      <ThemedText>Test</ThemedText>
+    </ThemedView>
   );
 }
