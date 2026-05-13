@@ -13,9 +13,46 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { theme } from "../constants/theme";
+import { AuthProvider, useAuth } from "../context/AuthContext";
 
-// Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
+
+function RootNavigator() {
+  const { session, isLoading } = useAuth();
+
+  // Keep splash screen up until session resolves
+  useEffect(() => {
+    if (!isLoading) {
+      SplashScreen.hideAsync();
+    }
+  }, [isLoading]);
+
+  if (isLoading) return null;
+
+  return (
+    <Stack
+      screenOptions={{
+        headerStyle: { backgroundColor: theme.colors.background },
+        headerTintColor: theme.colors.text,
+        headerTitleStyle: {
+          fontFamily: theme.typography.headlineMd.fontFamily,
+        },
+        contentStyle: { backgroundColor: theme.colors.background },
+      }}
+    >
+      {/* Protected: only accessible when authenticated */}
+      <Stack.Protected guard={!!session}>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
+      </Stack.Protected>
+
+      {/* Protected: only accessible when NOT authenticated */}
+      <Stack.Protected guard={!session}>
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      </Stack.Protected>
+    </Stack>
+  );
+}
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
@@ -26,33 +63,12 @@ export default function RootLayout() {
     Inter_600SemiBold,
   });
 
-  useEffect(() => {
-    if (loaded || error) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded, error]);
-
-  if (!loaded && !error) {
-    return null;
-  }
+  if (!loaded && !error) return null;
 
   return (
-    <>
+    <AuthProvider>
       <StatusBar style="light" />
-      <Stack
-        screenOptions={{
-          headerStyle: {
-            backgroundColor: theme.colors.background,
-          },
-          headerTintColor: theme.colors.background,
-          headerTitleStyle: {
-            fontFamily: theme.typography.headlineMd.fontFamily,
-          },
-          contentStyle: {
-            backgroundColor: theme.colors.background,
-          },
-        }}
-      />
-    </>
+      <RootNavigator />
+    </AuthProvider>
   );
 }

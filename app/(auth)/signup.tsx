@@ -1,0 +1,174 @@
+import { router } from "expo-router";
+import { useState } from "react";
+import { ScrollView, StyleSheet, View } from "react-native";
+import { Button } from "../../components/ui/Button";
+import { Input } from "../../components/ui/Input";
+import { ThemedText } from "../../components/ui/ThemedText";
+import { ThemedView } from "../../components/ui/ThemedView";
+import { theme } from "../../constants/theme";
+import { useAuth } from "../../context/AuthContext";
+
+export default function SignUpScreen() {
+  const { signUp } = useAuth();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<{
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+    form?: string;
+  }>({});
+
+  const validate = (): boolean => {
+    const next: typeof errors = {};
+
+    if (!email.trim()) next.email = "Email is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      next.email = "Enter a valid email";
+
+    if (!password) next.password = "Password is required";
+    else if (password.length < 8)
+      next.password = "Must be at least 8 characters";
+
+    if (!confirmPassword) next.confirmPassword = "Please confirm your password";
+    else if (password !== confirmPassword)
+      next.confirmPassword = "Passwords don't match";
+
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const handleSignUp = async () => {
+    if (!validate()) return;
+
+    setIsLoading(true);
+    setErrors({});
+
+    const { error } = await signUp(email.trim().toLowerCase(), password);
+
+    setIsLoading(false);
+
+    if (error) {
+      setErrors({ form: error });
+      return;
+    }
+
+    // On success, push to onboarding
+    router.replace("/(onboarding)/name");
+  };
+
+  return (
+    <ThemedView style={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Header */}
+        <View style={styles.header}>
+          <ThemedText variant="headlineMd">Create your account</ThemedText>
+        </View>
+
+        {/* Form */}
+        <View style={styles.form}>
+          <Input
+            label="Email"
+            value={email}
+            onChangeText={setEmail}
+            placeholder="you@example.com"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+            error={errors.email}
+          />
+          <Input
+            label="Password"
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Min. 8 characters"
+            isPassword
+            error={errors.password}
+          />
+          <Input
+            label="Confirm Password"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            placeholder="Repeat your password"
+            isPassword
+            error={errors.confirmPassword}
+          />
+
+          {errors.form && (
+            <ThemedText
+              variant="labelSm"
+              color="error"
+              style={styles.formError}
+            >
+              {errors.form}
+            </ThemedText>
+          )}
+
+          <Button
+            label="Create Account"
+            onPress={handleSignUp}
+            isLoading={isLoading}
+            style={styles.cta}
+          />
+        </View>
+
+        {/* Footer */}
+        <View style={styles.footer}>
+          <ThemedText variant="bodyMd" color="textMuted">
+            Already have an account?{" "}
+          </ThemedText>
+          <Button
+            label="Log in"
+            variant="ghost"
+            onPress={() => router.replace("/(auth)/login")}
+            style={styles.loginButton}
+          />
+        </View>
+      </ScrollView>
+    </ThemedView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  scroll: {
+    flexGrow: 1,
+    paddingHorizontal: theme.spacing.gutter,
+    paddingTop: theme.spacing.xl * 2,
+    paddingBottom: theme.spacing.xl,
+    gap: theme.spacing.xl,
+  },
+  header: {
+    gap: theme.spacing.sm,
+  },
+  form: {
+    gap: theme.spacing.md,
+  },
+  formError: {
+    textAlign: "center",
+    letterSpacing: 0.5,
+  },
+  cta: {
+    marginTop: theme.spacing.sm,
+  },
+  footer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loginButton: {
+    height: "auto",
+    paddingVertical: 0,
+    borderWidth: 0,
+  },
+});
