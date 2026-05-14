@@ -8,7 +8,7 @@ import {
   SpaceGrotesk_700Bold,
   useFonts,
 } from "@expo-google-fonts/space-grotesk";
-import { Tabs } from "expo-router";
+import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
@@ -17,7 +17,7 @@ import { AuthProvider, useAuth } from "../context/AuthContext";
 SplashScreen.preventAutoHideAsync();
 
 function RootNavigator() {
-  const { session, isLoading } = useAuth();
+  const { session, profile, isLoading } = useAuth();
 
   // Keep splash screen up until session resolves
   useEffect(() => {
@@ -29,17 +29,11 @@ function RootNavigator() {
   if (isLoading) return null;
 
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-      }}
-      tabBar={(_vals) => {
-        return <></>;
-      }}
-    >
-      <Tabs.Screen name="(auth)/login" />
-      <Tabs.Screen name="(auth)/signup" />
-    </Tabs>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(auth)" />
+      <Stack.Screen name="(onboarding)" />
+      <Stack.Screen name="index" />
+    </Stack>
   );
 }
 

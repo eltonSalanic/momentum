@@ -1,4 +1,4 @@
-import { Slot } from "expo-router";
+import { Slot, Redirect } from "expo-router";
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -11,8 +11,18 @@ import Animated, { FadeInLeft } from "react-native-reanimated";
 import { ThemedText } from "../../components/ui/ThemedText";
 import { ThemedView } from "../../components/ui/ThemedView";
 import { theme } from "../../constants/theme";
+import { useAuth } from "../../context/AuthContext";
 
 export default function AuthLayout() {
+  const { session, isLoading } = useAuth();
+
+  if (isLoading) return null;
+
+  // If already logged in, send them to the root which will handle onboarding check
+  if (session) {
+    return <Redirect href="/" />;
+  }
+
   return (
     <ThemedView style={styles.container}>
       <KeyboardAvoidingView

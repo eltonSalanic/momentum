@@ -55,8 +55,7 @@ export default function SignUpScreen() {
       return;
     }
 
-    // On success, push to onboarding
-    router.replace("/(onboarding)/name");
+    // Auth state change in AuthContext will trigger RootNavigator to switch to onboarding
   };
 
   return (
