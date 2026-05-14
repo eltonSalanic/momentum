@@ -69,6 +69,7 @@ export default function SignUpScreen() {
         keyboardType="email-address"
         autoCapitalize="none"
         autoCorrect={false}
+        textContentType="emailAddress"
         error={errors.email}
       />
       <Input
@@ -77,6 +78,7 @@ export default function SignUpScreen() {
         onChangeText={setPassword}
         placeholder="Min. 8 characters"
         isPassword
+        textContentType="newPassword"
         error={errors.password}
       />
       <Input
@@ -85,6 +87,7 @@ export default function SignUpScreen() {
         onChangeText={setConfirmPassword}
         placeholder="Repeat your password"
         isPassword
+        textContentType="newPassword"
         error={errors.confirmPassword}
       />
 

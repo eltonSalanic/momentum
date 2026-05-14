@@ -49,6 +49,7 @@ export function Input({
           onBlur={() => setIsFocused(false)}
           autoCapitalize={isPassword ? "none" : props.autoCapitalize}
           autoCorrect={isPassword ? false : props.autoCorrect}
+          spellCheck={isPassword ? false : props.spellCheck}
           {...props}
         />
         {isPassword && (
