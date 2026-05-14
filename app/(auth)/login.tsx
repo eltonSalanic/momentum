@@ -1,10 +1,8 @@
-import { router } from "expo-router";
 import { useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { ThemedText } from "../../components/ui/ThemedText";
-import { ThemedView } from "../../components/ui/ThemedView";
 import { theme } from "../../constants/theme";
 import { useAuth } from "../../context/AuthContext";
 
@@ -49,81 +47,45 @@ export default function LoginScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
-      <ScrollView
-        contentContainerStyle={styles.scroll}
-        keyboardShouldPersistTaps="handled"
-        automaticallyAdjustKeyboardInsets
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Form */}
-        <View style={styles.form}>
-          <Input
-            label="Email For Login"
-            value={email}
-            onChangeText={setEmail}
-            placeholder="you@example.com"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-            error={errors.email}
-          />
-          <Input
-            label="Password"
-            value={password}
-            onChangeText={setPassword}
-            placeholder="Your password"
-            isPassword
-            error={errors.password}
-          />
+    <View style={styles.form}>
+      <Input
+        label="Email"
+        value={email}
+        onChangeText={setEmail}
+        placeholder="you@example.com"
+        keyboardType="email-address"
+        autoCapitalize="none"
+        autoCorrect={false}
+        error={errors.email}
+      />
+      <Input
+        label="Password"
+        value={password}
+        onChangeText={setPassword}
+        placeholder="Your password"
+        isPassword
+        error={errors.password}
+      />
 
-          {errors.form && (
-            <ThemedText
-              variant="labelSm"
-              color="error"
-              style={styles.formError}
-            >
-              {errors.form}
-            </ThemedText>
-          )}
+      {errors.form && (
+        <ThemedText variant="labelSm" color="error" style={styles.formError}>
+          {errors.form}
+        </ThemedText>
+      )}
 
-          <Button
-            label="Log In"
-            onPress={handleLogin}
-            isLoading={isLoading}
-            style={styles.cta}
-          />
-        </View>
-
-        {/* Footer */}
-        <View style={styles.footer}>
-          <ThemedText variant="bodyMd" color="textMuted">
-            Don&apos;t have an account?{" "}
-          </ThemedText>
-          <Button
-            label="Sign up"
-            variant="ghost"
-            onPress={() => router.replace("/(auth)/signup")}
-            style={styles.signupButton}
-          />
-        </View>
-      </ScrollView>
-    </ThemedView>
+      <Button
+        label="Log In"
+        onPress={handleLogin}
+        isLoading={isLoading}
+        style={styles.cta}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scroll: {
-    flexGrow: 1,
-    paddingHorizontal: theme.spacing.gutter,
-    paddingTop: theme.spacing.lg,
-    paddingBottom: theme.spacing.xl,
-    gap: theme.spacing.xl,
-  },
   form: {
+    paddingHorizontal: 25,
     gap: theme.spacing.md,
   },
   formError: {
@@ -132,15 +94,5 @@ const styles = StyleSheet.create({
   },
   cta: {
     marginTop: theme.spacing.sm,
-  },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  signupButton: {
-    height: "auto",
-    paddingVertical: 0,
-    borderWidth: 0,
   },
 });

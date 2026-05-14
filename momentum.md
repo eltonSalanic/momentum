@@ -91,6 +91,8 @@ app/
 └── charges.tsx                    # Charges/penalty history (read-only)
 ```
 
+Always use the Expo docs MCP to use Expo SDK v54 best practices. If you don't have access to it, let me know before coding.
+
 ### Screens
 
 #### (auth) — Unauthenticated

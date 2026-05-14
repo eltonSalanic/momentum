@@ -8,11 +8,10 @@ import {
   SpaceGrotesk_700Bold,
   useFonts,
 } from "@expo-google-fonts/space-grotesk";
-import { Stack } from "expo-router";
+import { Tabs } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
-import { theme } from "../constants/theme";
 import { AuthProvider, useAuth } from "../context/AuthContext";
 
 SplashScreen.preventAutoHideAsync();
@@ -30,27 +29,17 @@ function RootNavigator() {
   if (isLoading) return null;
 
   return (
-    <Stack
+    <Tabs
       screenOptions={{
-        headerStyle: { backgroundColor: theme.colors.background },
-        headerTintColor: theme.colors.text,
-        headerTitleStyle: {
-          fontFamily: theme.typography.headlineMd.fontFamily,
-        },
-        contentStyle: { backgroundColor: theme.colors.background },
+        headerShown: false,
+      }}
+      tabBar={(_vals) => {
+        return <></>;
       }}
     >
-      {/* Protected: only accessible when authenticated */}
-      <Stack.Protected guard={!!session}>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
-      </Stack.Protected>
-
-      {/* Protected: only accessible when NOT authenticated */}
-      <Stack.Protected guard={!session}>
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      </Stack.Protected>
-    </Stack>
+      <Tabs.Screen name="(auth)/login" />
+      <Tabs.Screen name="(auth)/signup" />
+    </Tabs>
   );
 }
 
@@ -67,7 +56,7 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <StatusBar style="light" />
+      <StatusBar style="auto" />
       <RootNavigator />
     </AuthProvider>
   );
