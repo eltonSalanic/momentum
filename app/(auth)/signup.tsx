@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { ThemedText } from "../../components/ui/ThemedText";
@@ -100,6 +100,17 @@ export default function SignUpScreen() {
         isLoading={isLoading}
         style={styles.cta}
       />
+
+      <View style={styles.footer}>
+        <ThemedText variant="bodyMd" color="secondary">
+          Already have an account?{" "}
+        </ThemedText>
+        <Pressable onPress={() => router.push("/(auth)/login")}>
+          <ThemedText variant="bodyMd" color="primary">
+            Log In
+          </ThemedText>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -115,5 +126,11 @@ const styles = StyleSheet.create({
   },
   cta: {
     marginTop: theme.spacing.sm,
+  },
+  footer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: theme.spacing.md,
   },
 });
