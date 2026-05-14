@@ -96,8 +96,8 @@ Always use the Expo docs MCP to use Expo SDK v54 best practices. If you don't ha
 ### Screens
 
 #### (auth) — Unauthenticated
-- **login** — Email/password sign in via Supabase Auth
-- **signup** — Create account → triggers profile auto-creation
+- **login** — Email/password sign in via Supabase Auth ✅
+- **signup** — Create account → triggers profile auto-creation ✅
 
 #### (onboarding) — First-Time Setup (sequential, non-skippable)
 - **name** — Collect first & last name → UPDATE profiles

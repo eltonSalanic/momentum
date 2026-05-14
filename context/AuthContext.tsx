@@ -2,31 +2,66 @@ import { Session, User } from "@supabase/supabase-js";
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 
+interface Profile {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  has_completed_onboarding: boolean;
+}
+
 interface AuthContextValue {
   session: Session | null;
   user: User | null;
+  profile: Profile | null;
   isLoading: boolean;
   signUp: (email: string, password: string) => Promise<{ error: string | null }>;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const fetchProfile = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+    
+    if (data) {
+      setProfile(data);
+    }
+  };
+
   useEffect(() => {
+    // TEMPORARY: Clear session on load for testing onboarding
+    // Remove the line below once you're done testing
+    supabase.auth.signOut();
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      setIsLoading(false);
+      if (session?.user) {
+        fetchProfile(session.user.id).finally(() => setIsLoading(false));
+      } else {
+        setIsLoading(false);
+      }
     });
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      if (session?.user) {
+        fetchProfile(session.user.id);
+      } else {
+        setProfile(null);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -46,8 +81,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut();
   };
 
+  const refreshProfile = async () => {
+    if (session?.user) await fetchProfile(session.user.id);
+  };
+
   return (
-    <AuthContext.Provider value={{ session, user: session?.user ?? null, isLoading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ 
+      session, 
+      user: session?.user ?? null, 
+      profile,
+      isLoading, 
+      signUp, 
+      signIn, 
+      signOut,
+      refreshProfile 
+    }}>
       {children}
     </AuthContext.Provider>
   );
