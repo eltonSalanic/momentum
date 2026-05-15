@@ -15,7 +15,9 @@ interface OnboardingData {
 
 interface OnboardingContextValue {
   data: OnboardingData;
-  updateData: (updates: Partial<OnboardingData> | ((prev: OnboardingData) => OnboardingData)) => void;
+  updateData: (
+    updates: Partial<OnboardingData> | ((prev: OnboardingData) => OnboardingData),
+  ) => void;
   updateGoal: (updates: Partial<GoalData>) => void;
   resetData: () => void;
 }
@@ -36,7 +38,9 @@ const OnboardingContext = createContext<OnboardingContextValue | null>(null);
 export function OnboardingProvider({ children }: { children: React.ReactNode }) {
   const [data, setData] = useState<OnboardingData>(initialData);
 
-  const updateData = (updates: Partial<OnboardingData> | ((prev: OnboardingData) => OnboardingData)) => {
+  const updateData = (
+    updates: Partial<OnboardingData> | ((prev: OnboardingData) => OnboardingData),
+  ) => {
     if (typeof updates === 'function') {
       setData(updates);
     } else {

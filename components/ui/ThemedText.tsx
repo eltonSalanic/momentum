@@ -1,20 +1,20 @@
-import { Text, TextProps, StyleSheet } from "react-native";
-import { useTheme } from "../../hooks/useTheme";
-import { Theme } from "../../constants/theme";
+import { Text, TextProps, StyleSheet } from 'react-native';
+import { useTheme } from '../../hooks/useTheme';
+import { Theme } from '../../constants/theme';
 
 interface ThemedTextProps extends TextProps {
-  variant?: keyof Theme["typography"];
-  color?: keyof Theme["colors"];
+  variant?: keyof Theme['typography'];
+  color?: keyof Theme['colors'];
 }
 
 export const ThemedText = ({
-  variant = "bodyMd",
-  color = "text",
+  variant = 'bodyMd',
+  color = 'text',
   style,
   ...props
 }: ThemedTextProps) => {
   const theme = useTheme();
-  
+
   const typographyStyle = theme.typography[variant];
   const colorStyle = theme.colors[color];
 

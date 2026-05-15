@@ -1,17 +1,17 @@
-import { router } from "expo-router";
-import { useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
-import { Button } from "../../components/ui/Button";
-import { Input } from "../../components/ui/Input";
-import { ThemedText } from "../../components/ui/ThemedText";
-import { theme } from "../../constants/theme";
-import { useAuth } from "../../context/AuthContext";
+import { router } from 'expo-router';
+import { useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Button } from '../../components/ui/Button';
+import { Input } from '../../components/ui/Input';
+import { ThemedText } from '../../components/ui/ThemedText';
+import { theme } from '../../constants/theme';
+import { useAuth } from '../../context/AuthContext';
 
 export default function LoginScreen() {
   const { signIn } = useAuth();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{
     email?: string;
@@ -22,8 +22,8 @@ export default function LoginScreen() {
   const validate = (): boolean => {
     const next: typeof errors = {};
 
-    if (!email.trim()) next.email = "Email is required";
-    if (!password) next.password = "Password is required";
+    if (!email.trim()) next.email = 'Email is required';
+    if (!password) next.password = 'Password is required';
 
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -40,7 +40,7 @@ export default function LoginScreen() {
     setIsLoading(false);
 
     if (error) {
-      setErrors({ form: "Invalid email or password" });
+      setErrors({ form: 'Invalid email or password' });
       return;
     }
 
@@ -76,18 +76,13 @@ export default function LoginScreen() {
         </ThemedText>
       )}
 
-      <Button
-        label="Log In"
-        onPress={handleLogin}
-        isLoading={isLoading}
-        style={styles.cta}
-      />
+      <Button label="Log In" onPress={handleLogin} isLoading={isLoading} style={styles.cta} />
 
       <View style={styles.footer}>
         <ThemedText variant="bodyMd" color="secondary">
-          Don't have an account?{" "}
+          Don't have an account?{' '}
         </ThemedText>
-        <Pressable onPress={() => router.push("/(auth)/signup")}>
+        <Pressable onPress={() => router.push('/(auth)/signup')}>
           <ThemedText variant="bodyMd" color="primary">
             Sign Up
           </ThemedText>
@@ -103,16 +98,16 @@ const styles = StyleSheet.create({
     gap: theme.spacing.md,
   },
   formError: {
-    textAlign: "center",
+    textAlign: 'center',
     letterSpacing: 0.5,
   },
   cta: {
     marginTop: theme.spacing.sm,
   },
   footer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginTop: theme.spacing.md,
   },
 });

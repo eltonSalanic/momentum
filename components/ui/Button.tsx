@@ -1,28 +1,22 @@
-import {
-  ActivityIndicator,
-  Pressable,
-  PressableProps,
-  StyleSheet,
-  View,
-} from "react-native";
-import { theme } from "../../constants/theme";
-import { ThemedText } from "./ThemedText";
+import { ActivityIndicator, Pressable, PressableProps, StyleSheet, View } from 'react-native';
+import { theme } from '../../constants/theme';
+import { ThemedText } from './ThemedText';
 
 interface ButtonProps extends PressableProps {
   label: string;
-  variant?: "primary" | "ghost";
+  variant?: 'primary' | 'ghost';
   isLoading?: boolean;
 }
 
 export function Button({
   label,
-  variant = "primary",
+  variant = 'primary',
   isLoading = false,
   disabled,
   style,
   ...props
 }: ButtonProps) {
-  const isPrimary = variant === "primary";
+  const isPrimary = variant === 'primary';
   const isDisabled = disabled || isLoading;
 
   return (
@@ -63,8 +57,8 @@ const styles = StyleSheet.create({
   base: {
     height: 52,
     borderRadius: theme.radius.md,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   primary: {
     backgroundColor: theme.colors.primary,
@@ -73,24 +67,24 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.secondary,
   },
   ghost: {
-    backgroundColor: "transparent",
+    backgroundColor: 'transparent',
     borderWidth: 1,
     borderColor: theme.colors.outline,
   },
   ghostPressed: {
     borderColor: theme.colors.primary,
-    backgroundColor: "rgba(185, 199, 228, 0.05)",
+    backgroundColor: 'rgba(185, 199, 228, 0.05)',
   },
   disabled: {
     opacity: 0.4,
   },
   content: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: theme.spacing.sm,
   },
   label: {
     letterSpacing: 0.5,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: 'Inter_600SemiBold',
   },
 });

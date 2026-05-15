@@ -1,18 +1,18 @@
-import { router } from "expo-router";
-import { useState } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
-import { Button } from "../../components/ui/Button";
-import { Input } from "../../components/ui/Input";
-import { ThemedText } from "../../components/ui/ThemedText";
-import { theme } from "../../constants/theme";
-import { useAuth } from "../../context/AuthContext";
+import { router } from 'expo-router';
+import { useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Button } from '../../components/ui/Button';
+import { Input } from '../../components/ui/Input';
+import { ThemedText } from '../../components/ui/ThemedText';
+import { theme } from '../../constants/theme';
+import { useAuth } from '../../context/AuthContext';
 
 export default function SignUpScreen() {
   const { signUp } = useAuth();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{
     email?: string;
@@ -24,17 +24,14 @@ export default function SignUpScreen() {
   const validate = (): boolean => {
     const next: typeof errors = {};
 
-    if (!email.trim()) next.email = "Email is required";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-      next.email = "Enter a valid email";
+    if (!email.trim()) next.email = 'Email is required';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) next.email = 'Enter a valid email';
 
-    if (!password) next.password = "Password is required";
-    else if (password.length < 8)
-      next.password = "Must be at least 8 characters";
+    if (!password) next.password = 'Password is required';
+    else if (password.length < 8) next.password = 'Must be at least 8 characters';
 
-    if (!confirmPassword) next.confirmPassword = "Please confirm your password";
-    else if (password !== confirmPassword)
-      next.confirmPassword = "Passwords don't match";
+    if (!confirmPassword) next.confirmPassword = 'Please confirm your password';
+    else if (password !== confirmPassword) next.confirmPassword = "Passwords don't match";
 
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -105,9 +102,9 @@ export default function SignUpScreen() {
 
       <View style={styles.footer}>
         <ThemedText variant="bodyMd" color="secondary">
-          Already have an account?{" "}
+          Already have an account?{' '}
         </ThemedText>
-        <Pressable onPress={() => router.push("/(auth)/login")}>
+        <Pressable onPress={() => router.push('/(auth)/login')}>
           <ThemedText variant="bodyMd" color="primary">
             Log In
           </ThemedText>
@@ -123,16 +120,16 @@ const styles = StyleSheet.create({
     gap: theme.spacing.md,
   },
   formError: {
-    textAlign: "center",
+    textAlign: 'center',
     letterSpacing: 0.5,
   },
   cta: {
     marginTop: theme.spacing.sm,
   },
   footer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginTop: theme.spacing.md,
   },
 });

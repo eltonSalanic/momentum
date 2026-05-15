@@ -96,10 +96,12 @@ Always use the Expo docs MCP to use Expo SDK v54 best practices. If you don't ha
 ### Screens
 
 #### (auth) — Unauthenticated
+
 - **login** — Email/password sign in via Supabase Auth ✅
 - **signup** — Create account → triggers profile auto-creation ✅
 
 #### (onboarding) — First-Time Setup (sequential, non-skippable)
+
 - **name** — Collect first & last name → UPDATE profiles
 - **timezone** — Set timezone → UPDATE profiles
 - **payment** — Add credit card via Stripe → save stripe_customer_id
@@ -107,11 +109,13 @@ Always use the Expo docs MCP to use Expo SDK v54 best practices. If you don't ha
 Onboarding detection: if `profiles.first_name` is null, user hasn't onboarded.
 
 #### (tabs) — Main App
+
 - **Home** — Today's goals that need check-in. Tap to mark complete.
 - **Goals** — Full list of all goals (active, paused). FAB to create. Tap for detail.
 - **Settings** — Profile info, payment method, charges history link, sign out.
 
 #### Standalone Screens
+
 - **goal/create** — Title, amount ($), day picker (Mon–Sun toggles)
 - **goal/[id]** — View check-in history, edit, pause/resume, cancel
 - **profile/edit** — Change name, timezone, payment method
