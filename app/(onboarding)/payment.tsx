@@ -1,26 +1,88 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, ScrollView, Alert, ActivityIndicator } from 'react-native';
+import { useStripe } from '@stripe/stripe-react-native';
 import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useOnboarding } from '../../context/OnboardingContext';
-import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { ThemedText } from '../../components/ui/ThemedText';
 import { theme } from '../../constants/theme';
+import { useAuth } from '../../context/AuthContext';
+import { useOnboarding } from '../../context/OnboardingContext';
 import { supabase } from '../../lib/supabase';
 
 export default function PaymentStep() {
   const router = useRouter();
   const { data } = useOnboarding();
   const { user, refreshProfile } = useAuth();
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isStripeLoading, setIsStripeLoading] = useState(true);
+
+  useEffect(() => {
+    initializePaymentSheet();
+  }, []);
+
+  const initializePaymentSheet = async () => {
+    try {
+      // 1. Call our Edge Function to get the SetupIntent client secret
+      const { data: funcData, error: funcError } = await supabase.functions.invoke(
+        'stripe-setup-intent',
+      );
+
+      if (funcError) throw funcError;
+
+      // 2. Initialize the Payment Sheet
+      const { error } = await initPaymentSheet({
+        setupIntentClientSecret: funcData.clientSecret,
+        merchantDisplayName: process.env.EXPO_PUBLIC_APP_NAME ?? 'Momentum',
+        returnURL: 'momentum://stripe-redirect',
+        appearance: {
+          colors: {
+            primary: theme.colors.primary,
+            background: theme.colors.background,
+            componentBackground: theme.colors.surface,
+            // Stripe only accepts hex colors, not rgba — use a solid hex approximation
+            componentDivider: '#1E2A2A',
+            primaryText: theme.colors.text,
+            secondaryText: theme.colors.textMuted,
+            placeholderText: theme.colors.secondary,
+            icon: theme.colors.primary,
+            error: theme.colors.error,
+          },
+          shapes: {
+            borderRadius: theme.radius.md,
+          },
+        },
+      });
+
+      if (error) {
+        Alert.alert('Error', error.message);
+      }
+    } catch (e: any) {
+      console.error('Error initializing payment sheet:', e);
+      Alert.alert('Payment Setup Failed', 'We could not initialize the payment system.');
+    } finally {
+      setIsStripeLoading(false);
+    }
+  };
 
   const handleFinish = async () => {
     if (!user) return;
 
     setIsSubmitting(true);
     try {
-      // 1. Update Profile
+      // 1. Present the Payment Sheet first
+      const { error: stripeError } = await presentPaymentSheet();
+
+      if (stripeError) {
+        if (stripeError.code === 'Canceled') {
+          // User closed the sheet, just stop loading
+          return;
+        }
+        throw new Error(stripeError.message);
+      }
+
+      // 2. If Stripe setup succeeded, update Profile
       const { error: profileError } = await supabase
         .from('profiles')
         .update({
@@ -102,9 +164,9 @@ export default function PaymentStep() {
 
       <View style={styles.footer}>
         <Button
-          label={isSubmitting ? 'Saving...' : 'Finish & Start'}
+          label={isSubmitting ? 'Finalizing...' : 'Finish & Start'}
           onPress={handleFinish}
-          disabled={isSubmitting}
+          disabled={isSubmitting || isStripeLoading}
           variant="primary"
         />
         <Button
