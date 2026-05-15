@@ -32,15 +32,13 @@ export default function Home() {
   return (
     <View style={styles.container}>
       <ThemedText variant="display">Welcome, {profile?.first_name || 'User'}!</ThemedText>
-      <ThemedText variant="bodyLg" style={styles.subtitle}>You have successfully onboarded.</ThemedText>
-      
+      <ThemedText variant="bodyLg" style={styles.subtitle}>
+        You have successfully onboarded.
+      </ThemedText>
+
       <View style={styles.spacer} />
-      
-      <Button 
-        label="Sign Out" 
-        onPress={signOut} 
-        variant="ghost"
-      />
+
+      <Button label="Sign Out" onPress={signOut} variant="ghost" />
     </View>
   );
 }

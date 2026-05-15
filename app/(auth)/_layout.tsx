@@ -1,4 +1,4 @@
-import { Slot, Redirect } from "expo-router";
+import { Slot, Redirect } from 'expo-router';
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -6,12 +6,12 @@ import {
   StyleSheet,
   TouchableWithoutFeedback,
   View,
-} from "react-native";
-import Animated, { FadeInLeft } from "react-native-reanimated";
-import { ThemedText } from "../../components/ui/ThemedText";
-import { ThemedView } from "../../components/ui/ThemedView";
-import { theme } from "../../constants/theme";
-import { useAuth } from "../../context/AuthContext";
+} from 'react-native';
+import Animated, { FadeInLeft } from 'react-native-reanimated';
+import { ThemedText } from '../../components/ui/ThemedText';
+import { ThemedView } from '../../components/ui/ThemedView';
+import { theme } from '../../constants/theme';
+import { useAuth } from '../../context/AuthContext';
 
 export default function AuthLayout() {
   const { session, isLoading } = useAuth();
@@ -26,23 +26,16 @@ export default function AuthLayout() {
   return (
     <ThemedView style={styles.container}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.inner}>
-            <Animated.View
-              entering={FadeInLeft.duration(1500)}
-              style={styles.header}
-            >
+            <Animated.View entering={FadeInLeft.duration(1500)} style={styles.header}>
               <ThemedText variant="display" color="primary">
                 Momentum
               </ThemedText>
-              <ThemedText
-                variant="bodyMd"
-                color="secondary"
-                style={styles.caption}
-              >
+              <ThemedText variant="bodyMd" color="secondary" style={styles.caption}>
                 stay consistent
               </ThemedText>
             </Animated.View>
@@ -63,10 +56,10 @@ const styles = StyleSheet.create({
   },
   inner: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: 'center',
   },
   header: {
-    alignItems: "center",
+    alignItems: 'center',
     marginBottom: theme.spacing.xl,
   },
   caption: {

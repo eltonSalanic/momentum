@@ -1,4 +1,4 @@
-import { theme } from "../constants/theme";
+import { theme } from '../constants/theme';
 
 export const useTheme = () => {
   return theme;

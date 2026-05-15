@@ -1,13 +1,7 @@
-import { useState } from "react";
-import {
-  Pressable,
-  StyleSheet,
-  TextInput,
-  TextInputProps,
-  View,
-} from "react-native";
-import { theme } from "../../constants/theme";
-import { ThemedText } from "./ThemedText";
+import { useState } from 'react';
+import { Pressable, StyleSheet, TextInput, TextInputProps, View } from 'react-native';
+import { theme } from '../../constants/theme';
+import { ThemedText } from './ThemedText';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -16,14 +10,7 @@ interface InputProps extends TextInputProps {
   containerStyle?: object;
 }
 
-export function Input({
-  label,
-  error,
-  isPassword,
-  containerStyle,
-  style,
-  ...props
-}: InputProps) {
+export function Input({ label, error, isPassword, containerStyle, style, ...props }: InputProps) {
   const [isFocused, setIsFocused] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
@@ -49,18 +36,15 @@ export function Input({
           secureTextEntry={isPassword && !isVisible}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          autoCapitalize={isPassword ? "none" : props.autoCapitalize}
+          autoCapitalize={isPassword ? 'none' : props.autoCapitalize}
           autoCorrect={isPassword ? false : props.autoCorrect}
           spellCheck={isPassword ? false : props.spellCheck}
           {...props}
         />
         {isPassword && (
-          <Pressable
-            onPress={() => setIsVisible((v) => !v)}
-            style={styles.eyeButton}
-          >
+          <Pressable onPress={() => setIsVisible((v) => !v)} style={styles.eyeButton}>
             <ThemedText variant="labelSm" color="textMuted">
-              {isVisible ? "HIDE" : "SHOW"}
+              {isVisible ? 'HIDE' : 'SHOW'}
             </ThemedText>
           </Pressable>
         )}
@@ -83,8 +67,8 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   container: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
     borderColor: theme.colors.outline,

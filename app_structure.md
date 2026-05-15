@@ -74,40 +74,40 @@ app/
 
 ### (auth) — Unauthenticated
 
-| Screen | Purpose | Key Actions |
-|---|---|---|
-| `login` | Returning users sign in | Email/password → Supabase Auth |
+| Screen   | Purpose                  | Key Actions                                           |
+| -------- | ------------------------ | ----------------------------------------------------- |
+| `login`  | Returning users sign in  | Email/password → Supabase Auth                        |
 | `signup` | New users create account | Email/password → creates auth user → triggers profile |
 
 ### (onboarding) — First-Time Setup
 
 Sequential, non-skippable flow. User must complete all steps before accessing the app.
 
-| Screen | Purpose | DB Action |
-|---|---|---|
-| `name` | Collect first & last name | `UPDATE profiles SET first_name, last_name` |
-| `timezone` | Set their timezone | `UPDATE profiles SET timezone` |
-| `payment` | Add credit card via Stripe | Stripe SDK → save `stripe_customer_id` to profile |
+| Screen     | Purpose                    | DB Action                                         |
+| ---------- | -------------------------- | ------------------------------------------------- |
+| `name`     | Collect first & last name  | `UPDATE profiles SET first_name, last_name`       |
+| `timezone` | Set their timezone         | `UPDATE profiles SET timezone`                    |
+| `payment`  | Add credit card via Stripe | Stripe SDK → save `stripe_customer_id` to profile |
 
 > [!IMPORTANT]
 > **How to detect "onboarded":** Check if `profiles.first_name` is `null`. If it is, the user hasn't completed onboarding. This works because the auto-create trigger leaves `first_name` as `null`.
 
 ### (tabs) — Main App
 
-| Tab | Screen | Purpose |
-|---|---|---|
-| 🏠 **Home** | `index` | Shows today's goals that need check-in. Tap to mark complete. Shows checked-in vs remaining. |
-| 🎯 **Goals** | `goals` | Full list of all goals (active, paused). FAB button to create new. Tap to view detail. |
-| ⚙️ **Settings** | `settings` | Profile info, payment method, charges history link, sign out. |
+| Tab             | Screen     | Purpose                                                                                      |
+| --------------- | ---------- | -------------------------------------------------------------------------------------------- |
+| 🏠 **Home**     | `index`    | Shows today's goals that need check-in. Tap to mark complete. Shows checked-in vs remaining. |
+| 🎯 **Goals**    | `goals`    | Full list of all goals (active, paused). FAB button to create new. Tap to view detail.       |
+| ⚙️ **Settings** | `settings` | Profile info, payment method, charges history link, sign out.                                |
 
 ### Standalone Screens
 
-| Screen | Purpose | Notes |
-|---|---|---|
-| `goal/create` | Create a new goal | Title, amount ($), day picker (Mon–Sun toggles) |
-| `goal/[id]` | Goal detail | View check-in history, edit, pause/resume, cancel |
-| `profile/edit` | Edit profile | Change name, timezone, payment method |
-| `charges` | Charges history | Read-only list of past penalties with status |
+| Screen         | Purpose           | Notes                                             |
+| -------------- | ----------------- | ------------------------------------------------- |
+| `goal/create`  | Create a new goal | Title, amount ($), day picker (Mon–Sun toggles)   |
+| `goal/[id]`    | Goal detail       | View check-in history, edit, pause/resume, cancel |
+| `profile/edit` | Edit profile      | Change name, timezone, payment method             |
+| `charges`      | Charges history   | Read-only list of past penalties with status      |
 
 ---
 
@@ -115,9 +115,9 @@ Sequential, non-skippable flow. User must complete all steps before accessing th
 
 These wrap the app in `_layout.tsx`:
 
-| Provider | Purpose |
-|---|---|
-| `AuthProvider` | Manages Supabase session state, exposes `user`, `signIn`, `signOut` |
+| Provider          | Purpose                                                               |
+| ----------------- | --------------------------------------------------------------------- |
+| `AuthProvider`    | Manages Supabase session state, exposes `user`, `signIn`, `signOut`   |
 | `ProfileProvider` | Fetches & caches the user's profile, exposes `profile`, `isOnboarded` |
 
 ---

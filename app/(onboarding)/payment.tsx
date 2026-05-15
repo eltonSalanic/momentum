@@ -17,7 +17,7 @@ export default function PaymentStep() {
 
   const handleFinish = async () => {
     if (!user) return;
-    
+
     setIsSubmitting(true);
     try {
       // 1. Update Profile
@@ -34,21 +34,19 @@ export default function PaymentStep() {
       if (profileError) throw profileError;
 
       // 2. Create First Goal
-      const { error: goalError } = await supabase
-        .from('goals')
-        .insert({
-          user_id: user.id,
-          title: data.goal.title,
-          amount_cents: data.goal.amount_cents,
-          check_in_days: data.goal.check_in_days,
-          status: 'active',
-        });
+      const { error: goalError } = await supabase.from('goals').insert({
+        user_id: user.id,
+        title: data.goal.title,
+        amount_cents: data.goal.amount_cents,
+        check_in_days: data.goal.check_in_days,
+        status: 'active',
+      });
 
       if (goalError) throw goalError;
 
       // 3. Refresh profile state to trigger navigation change in root layout
       await refreshProfile();
-      
+
       // Navigation will happen automatically via RootNavigator's conditional logic
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Something went wrong while saving your profile.');
@@ -81,26 +79,30 @@ export default function PaymentStep() {
           </View>
           <View style={styles.summaryRow}>
             <ThemedText style={styles.summaryLabel}>Stake</ThemedText>
-            <ThemedText style={styles.summaryValue}>${(data.goal.amount_cents / 100).toFixed(2)} per miss</ThemedText>
+            <ThemedText style={styles.summaryValue}>
+              ${(data.goal.amount_cents / 100).toFixed(2)} per miss
+            </ThemedText>
           </View>
           <View style={styles.summaryRow}>
             <ThemedText style={styles.summaryLabel}>Schedule</ThemedText>
             <ThemedText style={styles.summaryValue}>
-              {data.goal.check_in_days.filter(d => d).length} days / week
+              {data.goal.check_in_days.filter((d) => d).length} days / week
             </ThemedText>
           </View>
         </View>
 
         <View style={styles.infoBox}>
           <ThemedText variant="labelSm" style={styles.infoText}>
-            Momentum is a high-stakes productivity app. By clicking finish, you agree to track your habits. We will set up your trial and payment method on the next screen after you enter the app.
+            Momentum is a high-stakes productivity app. By clicking finish, you agree to track your
+            habits. We will set up your trial and payment method on the next screen after you enter
+            the app.
           </ThemedText>
         </View>
       </ScrollView>
 
       <View style={styles.footer}>
         <Button
-          label={isSubmitting ? "Saving..." : "Finish & Start"}
+          label={isSubmitting ? 'Saving...' : 'Finish & Start'}
           onPress={handleFinish}
           disabled={isSubmitting}
           variant="primary"

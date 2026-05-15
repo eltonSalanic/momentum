@@ -1,6 +1,6 @@
-import { Session, User } from "@supabase/supabase-js";
-import { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "../lib/supabase";
+import { Session, User } from '@supabase/supabase-js';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { supabase } from '../lib/supabase';
 
 interface Profile {
   id: string;
@@ -28,12 +28,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchProfile = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
-    
+    const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
+
     if (data) {
       setProfile(data);
     }
@@ -42,7 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // TEMPORARY: Clear session on load for testing onboarding
     // Remove the line below once you're done testing
-    supabase.auth.signOut();
+    //supabase.auth.signOut();
 
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -55,7 +51,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       if (session?.user) {
         fetchProfile(session.user.id);
@@ -73,7 +71,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signIn = async (email: string, password: string): Promise<{ error: string | null }> => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
     return { error: error?.message ?? null };
   };
 
@@ -86,16 +87,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      session, 
-      user: session?.user ?? null, 
-      profile,
-      isLoading, 
-      signUp, 
-      signIn, 
-      signOut,
-      refreshProfile 
-    }}>
+    <AuthContext.Provider
+      value={{
+        session,
+        user: session?.user ?? null,
+        profile,
+        isLoading,
+        signUp,
+        signIn,
+        signOut,
+        refreshProfile,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -103,6 +106,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
   return ctx;
 }

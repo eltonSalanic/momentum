@@ -52,22 +52,18 @@ export default function GoalStep() {
           />
 
           <View style={styles.section}>
-            <ThemedText variant="labelMd" style={styles.label}>Frequency</ThemedText>
+            <ThemedText variant="labelMd" style={styles.label}>
+              Frequency
+            </ThemedText>
             <View style={styles.daysContainer}>
               {DAYS.map((day, i) => (
                 <TouchableOpacity
                   key={i}
-                  style={[
-                    styles.dayCircle,
-                    data.goal.check_in_days[i] && styles.dayCircleActive
-                  ]}
+                  style={[styles.dayCircle, data.goal.check_in_days[i] && styles.dayCircleActive]}
                   onPress={() => toggleDay(i)}
                 >
-                  <ThemedText 
-                    style={[
-                      styles.dayText,
-                      data.goal.check_in_days[i] && styles.dayTextActive
-                    ]}
+                  <ThemedText
+                    style={[styles.dayText, data.goal.check_in_days[i] && styles.dayTextActive]}
                   >
                     {day}
                   </ThemedText>
@@ -77,7 +73,9 @@ export default function GoalStep() {
           </View>
 
           <View style={styles.section}>
-            <ThemedText variant="labelMd" style={styles.label}>Stakes (USD)</ThemedText>
+            <ThemedText variant="labelMd" style={styles.label}>
+              Stakes (USD)
+            </ThemedText>
             <View style={styles.stakeContainer}>
               <ThemedText style={styles.currencySymbol}>$</ThemedText>
               <Input
@@ -90,7 +88,9 @@ export default function GoalStep() {
                 }}
                 containerStyle={styles.stakeInput}
               />
-              <ThemedText variant="bodyMd" style={styles.perMiss}>per miss</ThemedText>
+              <ThemedText variant="bodyMd" style={styles.perMiss}>
+                per miss
+              </ThemedText>
             </View>
             <ThemedText variant="labelSm" style={styles.hint}>
               You only pay if you miss a check-in.

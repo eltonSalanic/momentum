@@ -1,18 +1,12 @@
-import { useRouter } from "expo-router";
-import React from "react";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Button } from "../../components/ui/Button";
-import { Input } from "../../components/ui/Input";
-import { ThemedText } from "../../components/ui/ThemedText";
-import { theme } from "../../constants/theme";
-import { useOnboarding } from "../../context/OnboardingContext";
+import { useRouter } from 'expo-router';
+import React from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Button } from '../../components/ui/Button';
+import { Input } from '../../components/ui/Input';
+import { ThemedText } from '../../components/ui/ThemedText';
+import { theme } from '../../constants/theme';
+import { useOnboarding } from '../../context/OnboardingContext';
 
 export default function ProfileStep() {
   const router = useRouter();
@@ -20,14 +14,14 @@ export default function ProfileStep() {
 
   const handleNext = () => {
     if (data.firstName && data.lastName) {
-      router.push("/(onboarding)/goal");
+      router.push('/(onboarding)/goal');
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.flex}
       >
         <ScrollView
@@ -36,7 +30,7 @@ export default function ProfileStep() {
         >
           {/* Progress Indicator */}
           <View style={styles.progressContainer}>
-            <View style={[styles.progressBar, { width: "33.33%" }]} />
+            <View style={[styles.progressBar, { width: '33.33%' }]} />
           </View>
 
           <View style={styles.header}>
@@ -96,10 +90,10 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surfaceVariant,
     borderRadius: 2,
     marginBottom: theme.spacing.xl * 2,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   progressBar: {
-    height: "100%",
+    height: '100%',
     backgroundColor: theme.colors.primary,
   },
   header: {
@@ -120,6 +114,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: theme.spacing.xl,
-    paddingBottom: Platform.OS === "ios" ? 0 : theme.spacing.xl,
+    paddingBottom: Platform.OS === 'ios' ? 0 : theme.spacing.xl,
   },
 });
