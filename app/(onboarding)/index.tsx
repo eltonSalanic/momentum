@@ -34,10 +34,10 @@ export default function ProfileStep() {
           </View>
 
           <View style={styles.header}>
-            <ThemedText type="display" style={styles.title}>
+            <ThemedText variant="display" style={styles.title}>
               First things first.
             </ThemedText>
-            <ThemedText type="bodyLg" style={styles.subtitle}>
+            <ThemedText variant="bodyLg" style={styles.subtitle}>
               How should we address you?
             </ThemedText>
           </View>
@@ -62,7 +62,7 @@ export default function ProfileStep() {
 
         <View style={styles.footer}>
           <Button
-            title="Continue"
+            label="Continue"
             onPress={handleNext}
             disabled={!data.firstName || !data.lastName}
             variant="primary"

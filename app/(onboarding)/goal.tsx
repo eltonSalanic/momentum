@@ -35,10 +35,10 @@ export default function GoalStep() {
         </View>
 
         <View style={styles.header}>
-          <ThemedText type="display" style={styles.title}>
+          <ThemedText variant="display" style={styles.title}>
             Choose your battle.
           </ThemedText>
-          <ThemedText type="bodyLg" style={styles.subtitle}>
+          <ThemedText variant="bodyLg" style={styles.subtitle}>
             What is one habit you will commit to?
           </ThemedText>
         </View>
@@ -52,7 +52,7 @@ export default function GoalStep() {
           />
 
           <View style={styles.section}>
-            <ThemedText type="labelMd" style={styles.label}>Frequency</ThemedText>
+            <ThemedText variant="labelMd" style={styles.label}>Frequency</ThemedText>
             <View style={styles.daysContainer}>
               {DAYS.map((day, i) => (
                 <TouchableOpacity
@@ -77,7 +77,7 @@ export default function GoalStep() {
           </View>
 
           <View style={styles.section}>
-            <ThemedText type="labelMd" style={styles.label}>Stakes (USD)</ThemedText>
+            <ThemedText variant="labelMd" style={styles.label}>Stakes (USD)</ThemedText>
             <View style={styles.stakeContainer}>
               <ThemedText style={styles.currencySymbol}>$</ThemedText>
               <Input
@@ -90,9 +90,9 @@ export default function GoalStep() {
                 }}
                 containerStyle={styles.stakeInput}
               />
-              <ThemedText type="bodyMd" style={styles.perMiss}>per miss</ThemedText>
+              <ThemedText variant="bodyMd" style={styles.perMiss}>per miss</ThemedText>
             </View>
-            <ThemedText type="labelSm" style={styles.hint}>
+            <ThemedText variant="labelSm" style={styles.hint}>
               You only pay if you miss a check-in.
             </ThemedText>
           </View>
@@ -101,7 +101,7 @@ export default function GoalStep() {
 
       <View style={styles.footer}>
         <Button
-          title="Continue"
+          label="Continue"
           onPress={handleNext}
           disabled={!data.goal.title || data.goal.amount_cents <= 0}
           variant="primary"

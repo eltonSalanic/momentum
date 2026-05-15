@@ -13,12 +13,14 @@ interface InputProps extends TextInputProps {
   label?: string;
   error?: string;
   isPassword?: boolean;
+  containerStyle?: object;
 }
 
 export function Input({
   label,
   error,
   isPassword,
+  containerStyle,
   style,
   ...props
 }: InputProps) {
@@ -26,7 +28,7 @@ export function Input({
   const [isVisible, setIsVisible] = useState(false);
 
   return (
-    <View style={styles.wrapper}>
+    <View style={[styles.wrapper, containerStyle]}>
       {label && (
         <ThemedText variant="labelMd" color="textMuted" style={styles.label}>
           {label.toUpperCase()}
