@@ -31,15 +31,15 @@ export default function Home() {
   // Success: Welcome Home
   return (
     <View style={styles.container}>
-      <ThemedText type="display">Welcome, {profile?.first_name || 'User'}!</ThemedText>
-      <ThemedText type="bodyLg" style={styles.subtitle}>You have successfully onboarded.</ThemedText>
+      <ThemedText variant="display">Welcome, {profile?.first_name || 'User'}!</ThemedText>
+      <ThemedText variant="bodyLg" style={styles.subtitle}>You have successfully onboarded.</ThemedText>
       
       <View style={styles.spacer} />
       
       <Button 
         label="Sign Out" 
         onPress={signOut} 
-        variant="outline"
+        variant="ghost"
       />
     </View>
   );

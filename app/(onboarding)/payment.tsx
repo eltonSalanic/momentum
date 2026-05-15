@@ -66,10 +66,10 @@ export default function PaymentStep() {
         </View>
 
         <View style={styles.header}>
-          <ThemedText type="display" style={styles.title}>
+          <ThemedText variant="display" style={styles.title}>
             Ready to start?
           </ThemedText>
-          <ThemedText type="bodyLg" style={styles.subtitle}>
+          <ThemedText variant="bodyLg" style={styles.subtitle}>
             Review your commitment below.
           </ThemedText>
         </View>
@@ -92,7 +92,7 @@ export default function PaymentStep() {
         </View>
 
         <View style={styles.infoBox}>
-          <ThemedText type="labelSm" style={styles.infoText}>
+          <ThemedText variant="labelSm" style={styles.infoText}>
             Momentum is a high-stakes productivity app. By clicking finish, you agree to track your habits. We will set up your trial and payment method on the next screen after you enter the app.
           </ThemedText>
         </View>
@@ -100,16 +100,16 @@ export default function PaymentStep() {
 
       <View style={styles.footer}>
         <Button
-          title={isSubmitting ? "Saving..." : "Finish & Start"}
+          label={isSubmitting ? "Saving..." : "Finish & Start"}
           onPress={handleFinish}
           disabled={isSubmitting}
           variant="primary"
         />
         <Button
-          title="Back"
+          label="Back"
           onPress={() => router.back()}
           disabled={isSubmitting}
-          variant="outline"
+          variant="ghost"
         />
       </View>
 
