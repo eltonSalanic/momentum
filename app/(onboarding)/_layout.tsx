@@ -27,6 +27,7 @@ export default function OnboardingLayout() {
         }}
       >
         <Stack.Screen name="index" options={{ title: 'Profile' }} />
+        <Stack.Screen name="timezone" options={{ title: 'Location' }} />
         <Stack.Screen name="goal" options={{ title: 'Your First Goal' }} />
         <Stack.Screen name="payment" options={{ title: 'Commitment' }} />
       </Stack>

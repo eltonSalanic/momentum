@@ -31,7 +31,7 @@ export default function GoalStep() {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Progress Indicator */}
         <View style={styles.progressContainer}>
-          <View style={[styles.progressBar, { width: '66.66%' }]} />
+          <View style={[styles.progressBar, { width: '75%' }]} />
         </View>
 
         <View style={styles.header}>

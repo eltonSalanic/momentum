@@ -14,7 +14,7 @@ export default function ProfileStep() {
 
   const handleNext = () => {
     if (data.firstName && data.lastName) {
-      router.push('/(onboarding)/goal');
+      router.push('/(onboarding)/timezone');
     }
   };
 
@@ -30,7 +30,7 @@ export default function ProfileStep() {
         >
           {/* Progress Indicator */}
           <View style={styles.progressContainer}>
-            <View style={[styles.progressBar, { width: '33.33%' }]} />
+            <View style={[styles.progressBar, { width: '25%' }]} />
           </View>
 
           <View style={styles.header}>

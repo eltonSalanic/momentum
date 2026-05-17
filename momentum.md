@@ -102,9 +102,9 @@ Always use the Expo docs MCP to use Expo SDK v54 best practices. If you don't ha
 
 #### (onboarding) — First-Time Setup (sequential, non-skippable)
 
-- **name** — Collect first & last name → UPDATE profiles
-- **timezone** — Set timezone → UPDATE profiles
-- **payment** — Add credit card via Stripe → save stripe_customer_id
+- **name** — Collect first & last name → UPDATE profiles ✅
+- **timezone** — Set timezone → UPDATE profile ✅
+- **payment** — Add credit card via Stripe → save stripe_customer_id ✅
 
 Onboarding detection: if `profiles.first_name` is null, user hasn't onboarded.
 
