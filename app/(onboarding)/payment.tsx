@@ -36,6 +36,10 @@ export default function PaymentStep() {
         setupIntentClientSecret: funcData.clientSecret,
         merchantDisplayName: process.env.EXPO_PUBLIC_APP_NAME ?? 'Momentum',
         returnURL: 'momentum://stripe-redirect',
+        // TODO: Uncomment when building with EAS. Apple Pay does not work in Expo Go.
+        // applePay: {
+        //   merchantCountryCode: 'US',
+        // },
         appearance: {
           colors: {
             primary: theme.colors.primary,

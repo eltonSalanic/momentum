@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     color: theme.colors.textMuted,
   },
   form: {
-    gap: theme.spacing.lg,
+    gap: theme.spacing.sm,
   },
   spacer: {
     height: theme.spacing.md,

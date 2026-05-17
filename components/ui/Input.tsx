@@ -39,6 +39,7 @@ export function Input({ label, error, isPassword, containerStyle, style, ...prop
           autoCapitalize={isPassword ? 'none' : props.autoCapitalize}
           autoCorrect={isPassword ? false : props.autoCorrect}
           spellCheck={isPassword ? false : props.spellCheck}
+          returnKeyType="done"
           {...props}
         />
         {isPassword && (
