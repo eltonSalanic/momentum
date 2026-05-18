@@ -2,11 +2,11 @@ import React from 'react';
 import { StyleSheet, View, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useOnboarding } from '../../context/OnboardingContext';
-import { Input } from '../../components/ui/Input';
-import { Button } from '../../components/ui/Button';
-import { ThemedText } from '../../components/ui/ThemedText';
-import { theme } from '../../constants/theme';
+import { useOnboarding } from '../../../context/OnboardingContext';
+import { Input } from '../../../components/ui/Input';
+import { Button } from '../../../components/ui/Button';
+import { ThemedText } from '../../../components/ui/ThemedText';
+import { theme } from '../../../constants/theme';
 
 const DAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
@@ -22,7 +22,7 @@ export default function GoalStep() {
 
   const handleNext = () => {
     if (data.goal.title && data.goal.amount_cents > 0) {
-      router.push('/(onboarding)/payment');
+      router.push('/(app)/(onboarding)/payment');
     }
   };
 

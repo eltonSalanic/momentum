@@ -80,7 +80,7 @@ export default function LoginScreen() {
 
       <View style={styles.footer}>
         <ThemedText variant="bodyMd" color="secondary">
-          Don't have an account?{' '}
+          {"Don't have an account? "}
         </ThemedText>
         <Pressable onPress={() => router.push('/(auth)/signup')}>
           <ThemedText variant="bodyMd" color="primary">

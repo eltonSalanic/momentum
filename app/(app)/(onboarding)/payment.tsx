@@ -3,12 +3,12 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button } from '../../components/ui/Button';
-import { ThemedText } from '../../components/ui/ThemedText';
-import { theme } from '../../constants/theme';
-import { useAuth } from '../../context/AuthContext';
-import { useOnboarding } from '../../context/OnboardingContext';
-import { supabase } from '../../lib/supabase';
+import { Button } from '../../../components/ui/Button';
+import { ThemedText } from '../../../components/ui/ThemedText';
+import { theme } from '../../../constants/theme';
+import { useAuth } from '../../../context/AuthContext';
+import { useOnboarding } from '../../../context/OnboardingContext';
+import { supabase } from '../../../lib/supabase';
 
 export default function PaymentStep() {
   const router = useRouter();

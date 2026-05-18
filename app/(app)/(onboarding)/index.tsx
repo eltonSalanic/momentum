@@ -2,11 +2,11 @@ import { useRouter } from 'expo-router';
 import React from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
-import { ThemedText } from '../../components/ui/ThemedText';
-import { theme } from '../../constants/theme';
-import { useOnboarding } from '../../context/OnboardingContext';
+import { Button } from '../../../components/ui/Button';
+import { Input } from '../../../components/ui/Input';
+import { ThemedText } from '../../../components/ui/ThemedText';
+import { theme } from '../../../constants/theme';
+import { useOnboarding } from '../../../context/OnboardingContext';
 
 export default function ProfileStep() {
   const router = useRouter();
@@ -14,7 +14,7 @@ export default function ProfileStep() {
 
   const handleNext = () => {
     if (data.firstName && data.lastName) {
-      router.push('/(onboarding)/timezone');
+      router.push('/(app)/(onboarding)/timezone');
     }
   };
 

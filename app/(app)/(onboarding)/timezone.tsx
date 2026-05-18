@@ -2,10 +2,10 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { FlatList, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button } from '../../components/ui/Button';
-import { ThemedText } from '../../components/ui/ThemedText';
-import { theme } from '../../constants/theme';
-import { useOnboarding } from '../../context/OnboardingContext';
+import { Button } from '../../../components/ui/Button';
+import { ThemedText } from '../../../components/ui/ThemedText';
+import { theme } from '../../../constants/theme';
+import { useOnboarding } from '../../../context/OnboardingContext';
 import { Ionicons } from '@expo/vector-icons';
 
 // A subset of common timezones for the search/picker
@@ -40,7 +40,7 @@ export default function TimezoneStep() {
   );
 
   const handleNext = () => {
-    router.push('/(onboarding)/goal');
+    router.push('/(app)/(onboarding)/goal');
   };
 
   return (
