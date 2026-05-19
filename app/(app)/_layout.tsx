@@ -18,8 +18,20 @@ export default function AppLayout() {
         contentStyle: { backgroundColor: '#000000' },
       }}
     >
-      <Stack.Screen name="index" />
-      <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
+      {/* Main tab navigator */}
+      <Stack.Screen name="(tabs)" />
+
+      {/* Onboarding flow */}
+      <Stack.Screen name="(onboarding)" />
+
+      {/* Create Goal — slides up as a modal */}
+      <Stack.Screen
+        name="goal/create"
+        options={{
+          presentation: 'modal',
+          animation: 'slide_from_bottom',
+        }}
+      />
     </Stack>
   );
 }

@@ -113,7 +113,8 @@ export default function PaymentStep() {
       // 3. Refresh profile state to trigger navigation change in root layout
       await refreshProfile();
 
-      // Navigation will happen automatically via RootNavigator's conditional logic
+      // 4. Explicitly navigate to the main tabs app
+      router.replace('/(app)/(tabs)');
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Something went wrong while saving your profile.');
     } finally {

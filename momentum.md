@@ -106,12 +106,10 @@ Always use the Expo docs MCP to use Expo SDK v54 best practices. If you don't ha
 - **timezone** — Set timezone → UPDATE profile ✅
 - **payment** — Add credit card via Stripe → save stripe_customer_id ✅
 
-Onboarding detection: if `profiles.first_name` is null, user hasn't onboarded.
 
 #### (tabs) — Main App
 
-- **Home** — Today's goals that need check-in. Tap to mark complete.
-- **Goals** — Full list of all goals (active, paused). FAB to create. Tap for detail.
+- **Home** — Today's goals that need check-in. Tap to mark complete. Along with a list of all current goals.
 - **Settings** — Profile info, payment method, charges history link, sign out.
 
 #### Standalone Screens
