@@ -11,18 +11,18 @@ Commitments: A recurring Routine or one-time Task a user creates that they must 
 
 Must Haves
 
-- [ ] Create account
-  - [ ] Add their credit card
-  - [ ] Add their timezone
-  - [ ] Add first name and last name
-- [ ] Create Commitments
-  - [ ] Choose type: Routine (recurring) or Task (one-time)
-  - [ ] For Routines: Set active days to check-in (Mon-Sun toggles)
-  - [ ] For Tasks: Set single completion deadline date
-  - [ ] Set penalty amount ($$$)
-  - [ ] Choose deadline timing: End of Day (11:59 PM) or Specific Time (Custom Time picker)
-- [ ] If user doesn’t check-in by the deadline, they get charged
-- [ ] Free 14 day trial
+- [x] Create account
+  - [x] Add their credit card
+  - [x] Add their timezone
+  - [x] Add first name and last name
+- [x] Create Commitments
+  - [x] Choose type: Routine (recurring) or Task (one-time)
+  - [x] For Routines: Set active days to check-in (Mon-Sun toggles)
+  - [x] For Tasks: Set single completion deadline date
+  - [x] Set penalty amount ($$$)
+  - [x] Choose deadline timing: End of Day (11:59 PM) or Specific Time (Custom Time picker)
+- [x] If user doesn’t check-in by the deadline, they get charged
+- [x] Free 14 day trial
 - [ ] Pausing goal
 - [ ] Edit profile
   - [ ] Change name
