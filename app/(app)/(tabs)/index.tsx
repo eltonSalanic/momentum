@@ -1,8 +1,9 @@
-import { useCallback } from 'react';
-import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { useCallback, useState } from 'react';
+import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
 import { useFocusEffect } from 'expo-router';
-import { ArrowDown, Sparkles } from 'lucide-react-native';
+import { ArrowDown, ChevronDown, ChevronRight, Sparkles } from 'lucide-react-native';
 
 import { ThemedText } from '../../../components/ui/ThemedText';
 import { SectionHeader } from '../../../components/home/SectionHeader';
@@ -79,6 +80,18 @@ export default function HomeScreen() {
 
   const todayIndex = getTodayIndex();
 
+  const [expandedDays, setExpandedDays] = useState<Record<string, boolean>>(() => ({
+    [DAYS_OF_WEEK[todayIndex]]: true,
+  }));
+
+  const toggleDayExpand = (dayName: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setExpandedDays((prev) => ({
+      ...prev,
+      [dayName]: !prev[dayName],
+    }));
+  };
+
   const groupedCommitments = DAYS_OF_WEEK.map((dayName, dayIndex) => {
     const items = commitments.filter((c) => {
       if (c.type === COMMITMENT_TYPES.ROUTINE) {
@@ -95,7 +108,7 @@ export default function HomeScreen() {
       dayIndex,
       items,
     };
-  }).filter((g) => g.items.length > 0);
+  });
 
   return (
     <ScrollView
@@ -191,17 +204,69 @@ export default function HomeScreen() {
         ) : (
           groupedCommitments.map((group) => {
             const isToday = group.dayIndex === todayIndex;
+            const isExpanded = !!expandedDays[group.dayName];
+            const hasItems = group.items.length > 0;
+            const count = group.items.length;
+
             return (
               <View key={group.dayName} style={styles.dayGroup}>
-                <ThemedText
-                  variant="labelSm"
-                  style={[styles.dayHeader, isToday && styles.dayHeaderToday]}
+                <Pressable
+                  onPress={() => toggleDayExpand(group.dayName)}
+                  style={({ pressed }) => [
+                    styles.dayHeaderBar,
+                    isToday && styles.dayHeaderBarToday,
+                    pressed && styles.dayHeaderBarPressed,
+                  ]}
                 >
-                  {group.dayName.toUpperCase()} {isToday ? '(TODAY)' : ''}
-                </ThemedText>
-                {group.items.map((c) => (
-                  <CommitmentRow key={c.id} commitment={c} />
-                ))}
+                  <View style={styles.dayHeaderLeft}>
+                    <ThemedText
+                      variant="bodyMd"
+                      style={[styles.dayHeaderName, isToday && styles.dayHeaderNameToday]}
+                    >
+                      {group.dayName}
+                    </ThemedText>
+                    {isToday && (
+                      <View style={styles.todayPill}>
+                        <ThemedText variant="labelSm" style={styles.todayPillText}>
+                          TODAY
+                        </ThemedText>
+                      </View>
+                    )}
+                  </View>
+
+                  <View style={styles.dayHeaderRight}>
+                    <View style={[styles.countBadge, count > 0 && styles.countBadgeActive]}>
+                      <ThemedText
+                        variant="labelSm"
+                        style={[styles.countBadgeText, count > 0 && styles.countBadgeTextActive]}
+                      >
+                        {count}
+                      </ThemedText>
+                    </View>
+
+                    {isExpanded ? (
+                      <ChevronDown size={16} color={theme.colors.secondary} strokeWidth={2} />
+                    ) : (
+                      <ChevronRight size={16} color={theme.colors.secondary} strokeWidth={2} />
+                    )}
+                  </View>
+                </Pressable>
+
+                {isExpanded && (
+                  <View style={styles.expandedContent}>
+                    {!hasItems ? (
+                      <View style={styles.emptyDayRow}>
+                        <ThemedText variant="labelSm" style={styles.emptyDayText}>
+                          No commitments scheduled
+                        </ThemedText>
+                      </View>
+                    ) : (
+                      group.items.map((c) => (
+                        <CommitmentRow key={c.id} commitment={c} />
+                      ))
+                    )}
+                  </View>
+                )}
               </View>
             );
           })
@@ -285,18 +350,92 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_400Regular',
   },
   dayGroup: {
-    marginBottom: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
   },
-  dayHeader: {
+  dayHeaderBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: theme.colors.surfaceVariant,
+    borderRadius: theme.radius.xl,
+    borderWidth: 1,
+    borderColor: theme.colors.outline,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  dayHeaderBarToday: {
+    borderColor: 'rgba(185, 199, 228, 0.4)',
+    backgroundColor: 'rgba(185, 199, 228, 0.05)',
+  },
+  dayHeaderBarPressed: {
+    opacity: 0.85,
+  },
+  dayHeaderLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  dayHeaderName: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
-    letterSpacing: 1,
-    color: theme.colors.secondary,
-    marginTop: theme.spacing.sm,
-    marginBottom: theme.spacing.xs,
-    paddingLeft: theme.spacing.xs,
+    color: '#E2E2E2',
   },
-  dayHeaderToday: {
+  dayHeaderNameToday: {
     color: theme.colors.primary,
+  },
+  todayPill: {
+    backgroundColor: 'rgba(185, 199, 228, 0.15)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: theme.radius.sm,
+  },
+  todayPillText: {
+    color: theme.colors.primary,
+    fontSize: 9,
+    letterSpacing: 0.5,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  dayHeaderRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  countBadge: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: 'rgba(100, 116, 139, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  countBadgeActive: {
+    backgroundColor: 'rgba(185, 199, 228, 0.2)',
+  },
+  countBadgeText: {
+    fontSize: 10,
+    color: theme.colors.secondary,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  countBadgeTextActive: {
+    color: theme.colors.primary,
+  },
+  expandedContent: {
+    paddingTop: theme.spacing.xs,
+    paddingLeft: theme.spacing.xs,
+    gap: theme.spacing.xs,
+  },
+  emptyDayRow: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: theme.colors.outline,
+    borderRadius: theme.radius.xl,
+    backgroundColor: 'rgba(255,255,255,0.01)',
+  },
+  emptyDayText: {
+    color: theme.colors.secondary,
+    fontSize: 11,
   },
 });
