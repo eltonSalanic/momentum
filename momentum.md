@@ -112,12 +112,12 @@ Always use the Expo docs MCP to use Expo SDK v54 best practices. If you don't ha
 
 #### (tabs) — Main App
 
-- **Home** — Today's active commitments (Routines and Tasks) that need check-in. Tap to mark complete. Along with a list of all current commitments.
+- **Home** — Today's active commitments (Routines and Tasks) that need check-in. Tap to mark complete. Along with a list of all current commitments. ✅
 - **Settings** — Profile info, payment method, charges history link, sign out.
 
 #### Standalone Screens
 
-- **goal/create** — Set up a Commitment: Routine vs Task selection, schedule (days or single date), penalty amount ($), and deadline timing (End of Day vs Specific Time)
+- **goal/create** — Set up a Commitment: Routine vs Task selection, schedule (days or single date), penalty amount ($), and deadline timing (End of Day vs Specific Time) ✅
 - **goal/[id]** — View commitment details, check-in history, edit, pause/resume, cancel
 - **profile/edit** — Change name, timezone, payment method
 - **charges** — Read-only list of past penalties with status
