@@ -23,6 +23,7 @@ interface CheckIn {
 export interface TodayCommitment extends Commitment {
   isCheckedIn: boolean;
   checkInId: string | null;
+  isMissed: boolean;
 }
 
 /**
@@ -88,22 +89,46 @@ export function useCommitments() {
     const todayCheckIns = (checkIns ?? []) as CheckIn[];
     const checkInMap = new Map(todayCheckIns.map((ci) => [ci.goal_id, ci.id]));
 
-    // Filter commitments that are due today
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMin = now.getMinutes();
+
+    // Filter commitments that are due today, or tasks that were due in the past and are still active
     const dueToday: TodayCommitment[] = allCommitments
       .filter((c) => {
         if (c.type === COMMITMENT_TYPES.ROUTINE) {
           return c.check_in_days != null && c.check_in_days[dayIndex] === true;
         }
         if (c.type === COMMITMENT_TYPES.TASK) {
-          return c.due_date === dateStr;
+          return c.due_date != null && c.due_date <= dateStr;
         }
         return false;
       })
-      .map((c) => ({
-        ...c,
-        isCheckedIn: checkInMap.has(c.id),
-        checkInId: checkInMap.get(c.id) ?? null,
-      }));
+      .map((c) => {
+        const isCheckedIn = checkInMap.has(c.id);
+        const checkInId = checkInMap.get(c.id) ?? null;
+        let isMissed = false;
+
+        if (!isCheckedIn) {
+          if (c.type === COMMITMENT_TYPES.TASK && c.due_date != null && c.due_date < dateStr) {
+            // Task has a past due date and hasn't been checked in today
+            isMissed = true;
+          } else if (c.deadline_type === 'specific_time' && c.deadline_time) {
+            // Due today, but specific deadline time has passed
+            const [deadHour, deadMin] = c.deadline_time.split(':').map(Number);
+            if (currentHour > deadHour || (currentHour === deadHour && currentMin >= deadMin)) {
+              isMissed = true;
+            }
+          }
+        }
+
+        return {
+          ...c,
+          isCheckedIn,
+          checkInId,
+          isMissed,
+        };
+      });
 
     setTodayCommitments(dueToday);
     setIsLoading(false);

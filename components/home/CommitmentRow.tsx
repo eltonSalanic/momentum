@@ -39,28 +39,45 @@ function formatDeadlineInfo(commitment: Commitment): string {
   return '';
 }
 
+function getLocalTodayStr(): string {
+  const now = new Date();
+  return new Intl.DateTimeFormat('en-CA', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(now);
+}
+
 export function CommitmentRow({ commitment }: CommitmentRowProps) {
   const isRoutine = commitment.type === COMMITMENT_TYPES.ROUTINE;
+  const isMissed = !isRoutine && commitment.due_date != null && commitment.due_date < getLocalTodayStr();
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, isMissed && styles.cardMissed]}>
       <View style={styles.header}>
         {/* Type + Title */}
         <View style={styles.titleRow}>
-          <View style={styles.iconContainer}>
+          <View style={[styles.iconContainer, isMissed && styles.iconContainerMissed]}>
             {isRoutine ? (
-              <RotateCcw size={14} color={theme.colors.primary} strokeWidth={2} />
+              <RotateCcw size={14} color={isMissed ? theme.colors.error : theme.colors.primary} strokeWidth={2} />
             ) : (
-              <Target size={14} color={theme.colors.primary} strokeWidth={2} />
+              <Target size={14} color={isMissed ? theme.colors.error : theme.colors.primary} strokeWidth={2} />
             )}
           </View>
-          <ThemedText variant="bodyMd" style={styles.title} numberOfLines={1}>
+          <ThemedText variant="bodyMd" style={[styles.title, isMissed && styles.titleMissed]} numberOfLines={1}>
             {commitment.title}
           </ThemedText>
+          {isMissed && (
+            <View style={styles.missedBadge}>
+              <ThemedText variant="labelSm" style={styles.missedText}>
+                MISSED
+              </ThemedText>
+            </View>
+          )}
         </View>
 
         {/* Penalty */}
-        <View style={styles.penaltyBadge}>
+        <View style={[styles.penaltyBadge, isMissed && styles.penaltyBadgeMissed]}>
           <ThemedText variant="labelSm" style={styles.penaltyText}>
             {formatAmount(commitment.amount_cents)}
           </ThemedText>
@@ -93,16 +110,16 @@ export function CommitmentRow({ commitment }: CommitmentRowProps) {
           </View>
         ) : (
           <View style={styles.dueDateRow}>
-            <Calendar size={11} color={theme.colors.textMuted} strokeWidth={2} />
-            <ThemedText variant="labelSm" style={styles.metaText}>
+            <Calendar size={11} color={isMissed ? theme.colors.error : theme.colors.textMuted} strokeWidth={2} />
+            <ThemedText variant="labelSm" style={[styles.metaText, isMissed && styles.metaTextMissed]}>
               {commitment.due_date ? formatDueDate(commitment.due_date) : 'No date'}
             </ThemedText>
           </View>
         )}
 
         <View style={styles.deadlineRow}>
-          <Clock size={11} color={theme.colors.textMuted} strokeWidth={2} />
-          <ThemedText variant="labelSm" style={styles.metaText}>
+          <Clock size={11} color={isMissed ? theme.colors.error : theme.colors.textMuted} strokeWidth={2} />
+          <ThemedText variant="labelSm" style={[styles.metaText, isMissed && styles.metaTextMissed]}>
             {formatDeadlineInfo(commitment)}
           </ThemedText>
         </View>
@@ -120,6 +137,10 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: theme.spacing.sm,
     gap: 10,
+  },
+  cardMissed: {
+    borderColor: 'rgba(255, 180, 171, 0.35)',
+    backgroundColor: 'rgba(255, 180, 171, 0.02)',
   },
   header: {
     flexDirection: 'row',
@@ -141,15 +162,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  iconContainerMissed: {
+    backgroundColor: 'rgba(255, 180, 171, 0.12)',
+  },
   title: {
     flex: 1,
     fontFamily: 'Inter_500Medium',
+  },
+  titleMissed: {
+    color: theme.colors.textMuted,
+  },
+  missedBadge: {
+    backgroundColor: 'rgba(255, 180, 171, 0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: theme.radius.full,
+  },
+  missedText: {
+    color: theme.colors.error,
+    fontSize: 9,
+    letterSpacing: 0.5,
   },
   penaltyBadge: {
     backgroundColor: 'rgba(255, 180, 171, 0.12)',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: theme.radius.full,
+  },
+  penaltyBadgeMissed: {
+    backgroundColor: 'rgba(255, 180, 171, 0.25)',
   },
   penaltyText: {
     color: theme.colors.error,
@@ -198,5 +239,8 @@ const styles = StyleSheet.create({
   metaText: {
     color: theme.colors.textMuted,
     fontSize: 11,
+  },
+  metaTextMissed: {
+    color: theme.colors.error,
   },
 });

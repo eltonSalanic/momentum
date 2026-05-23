@@ -1,5 +1,5 @@
 import * as Haptics from 'expo-haptics';
-import { Check, Circle, Clock, RotateCcw, Target } from 'lucide-react-native';
+import { AlertCircle, Check, Circle, Clock, RotateCcw, Target } from 'lucide-react-native';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -38,9 +38,10 @@ function formatAmount(cents: number): string {
 export function TodayCard({ commitment, onCheckIn }: TodayCardProps) {
   const scale = useSharedValue(1);
   const checked = commitment.isCheckedIn;
+  const isMissed = commitment.isMissed;
 
   const handlePress = () => {
-    if (checked) return;
+    if (checked || isMissed) return;
     scale.value = withSpring(0.97, { damping: 15 }, () => {
       scale.value = withSpring(1);
     });
@@ -50,7 +51,7 @@ export function TodayCard({ commitment, onCheckIn }: TodayCardProps) {
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
-    opacity: withTiming(checked ? 0.55 : 1, { duration: 300 }),
+    opacity: withTiming(checked ? 0.55 : isMissed ? 0.85 : 1, { duration: 300 }),
   }));
 
   const isRoutine = commitment.type === COMMITMENT_TYPES.ROUTINE;
@@ -59,33 +60,50 @@ export function TodayCard({ commitment, onCheckIn }: TodayCardProps) {
     <Animated.View style={animatedStyle}>
       <Pressable
         onPress={handlePress}
-        disabled={checked}
+        disabled={checked || isMissed}
         style={({ pressed }) => [
           styles.card,
           checked && styles.cardChecked,
-          pressed && !checked && styles.cardPressed,
+          isMissed && styles.cardMissed,
+          pressed && !checked && !isMissed && styles.cardPressed,
         ]}
       >
         {/* Left accent bar */}
-        <View style={[styles.accent, checked && styles.accentChecked]} />
+        <View
+          style={[
+            styles.accent,
+            checked && styles.accentChecked,
+            isMissed && styles.accentMissed,
+          ]}
+        />
 
         {/* Content */}
         <View style={styles.content}>
           <View style={styles.topRow}>
-            {/* Type chip */}
-            <View style={styles.typeChip}>
-              {isRoutine ? (
-                <RotateCcw size={10} color={theme.colors.primary} strokeWidth={2.5} />
-              ) : (
-                <Target size={10} color={theme.colors.primary} strokeWidth={2.5} />
+            {/* Type chip and missed badge */}
+            <View style={styles.typeRow}>
+              <View style={styles.typeChip}>
+                {isRoutine ? (
+                  <RotateCcw size={10} color={isMissed ? theme.colors.error : theme.colors.primary} strokeWidth={2.5} />
+                ) : (
+                  <Target size={10} color={isMissed ? theme.colors.error : theme.colors.primary} strokeWidth={2.5} />
+                )}
+                <ThemedText variant="labelSm" style={[styles.typeLabel, isMissed && styles.typeLabelMissed]}>
+                  {isRoutine ? 'ROUTINE' : 'TASK'}
+                </ThemedText>
+              </View>
+
+              {isMissed && (
+                <View style={styles.missedBadge}>
+                  <ThemedText variant="labelSm" style={styles.missedText}>
+                    MISSED
+                  </ThemedText>
+                </View>
               )}
-              <ThemedText variant="labelSm" style={styles.typeLabel}>
-                {isRoutine ? 'ROUTINE' : 'TASK'}
-              </ThemedText>
             </View>
 
             {/* Penalty badge */}
-            <View style={styles.penaltyBadge}>
+            <View style={[styles.penaltyBadge, isMissed && styles.penaltyBadgeMissed]}>
               <ThemedText variant="labelSm" style={styles.penaltyText}>
                 {formatAmount(commitment.amount_cents)}
               </ThemedText>
@@ -100,8 +118,8 @@ export function TodayCard({ commitment, onCheckIn }: TodayCardProps) {
           </ThemedText>
 
           <View style={styles.deadlineRow}>
-            <Clock size={12} color={theme.colors.textMuted} strokeWidth={2} />
-            <ThemedText variant="labelSm" style={styles.deadline}>
+            <Clock size={12} color={isMissed ? theme.colors.error : theme.colors.textMuted} strokeWidth={2} />
+            <ThemedText variant="labelSm" style={[styles.deadline, isMissed && styles.deadlineMissed]}>
               {formatDeadline(commitment)}
             </ThemedText>
           </View>
@@ -113,6 +131,8 @@ export function TodayCard({ commitment, onCheckIn }: TodayCardProps) {
             <View style={styles.checkboxFilled}>
               <Check size={16} color={theme.colors.onPrimary} strokeWidth={3} />
             </View>
+          ) : isMissed ? (
+            <AlertCircle size={28} color={theme.colors.error} strokeWidth={2} />
           ) : (
             <Circle size={28} color={theme.colors.secondary} strokeWidth={1.5} />
           )}
@@ -136,6 +156,10 @@ const styles = StyleSheet.create({
   cardChecked: {
     borderColor: 'rgba(185, 199, 228, 0.1)',
   },
+  cardMissed: {
+    borderColor: 'rgba(255, 180, 171, 0.35)',
+    backgroundColor: 'rgba(255, 180, 171, 0.03)',
+  },
   cardPressed: {
     backgroundColor: 'rgba(185, 199, 228, 0.05)',
   },
@@ -148,6 +172,9 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.secondary,
     opacity: 0.4,
   },
+  accentMissed: {
+    backgroundColor: theme.colors.error,
+  },
   content: {
     flex: 1,
     paddingVertical: 14,
@@ -159,6 +186,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  typeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   typeChip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -169,11 +201,28 @@ const styles = StyleSheet.create({
     fontSize: 10,
     letterSpacing: 1,
   },
+  typeLabelMissed: {
+    color: theme.colors.error,
+  },
+  missedBadge: {
+    backgroundColor: 'rgba(255, 180, 171, 0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: theme.radius.full,
+  },
+  missedText: {
+    color: theme.colors.error,
+    fontSize: 9,
+    letterSpacing: 0.5,
+  },
   penaltyBadge: {
     backgroundColor: 'rgba(255, 180, 171, 0.12)',
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: theme.radius.full,
+  },
+  penaltyBadgeMissed: {
+    backgroundColor: 'rgba(255, 180, 171, 0.25)',
   },
   penaltyText: {
     color: theme.colors.error,
@@ -194,6 +243,9 @@ const styles = StyleSheet.create({
   deadline: {
     color: theme.colors.textMuted,
     fontSize: 11,
+  },
+  deadlineMissed: {
+    color: theme.colors.error,
   },
   checkboxContainer: {
     paddingRight: theme.spacing.md,

@@ -155,6 +155,8 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   completedEmoji: {
-    fontSize: 40,
+    fontSize: 44,
+    lineHeight: 52,
+    textAlign: 'center',
   },
 });
