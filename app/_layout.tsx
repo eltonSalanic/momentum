@@ -52,7 +52,7 @@ export default function RootLayout() {
   return (
     <StripeProvider publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? ''}>
       <AuthProvider>
-        <StatusBar style="auto" />
+        <StatusBar style="light" />
         <RootNavigator />
       </AuthProvider>
     </StripeProvider>
