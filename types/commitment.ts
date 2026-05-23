@@ -21,3 +21,20 @@ export interface CommitmentFormState {
   deadlineType: DeadlineType;
   deadlineTime: string;
 }
+
+/** Database row shape from the `goals` table */
+export interface Commitment {
+  id: string;
+  user_id: string;
+  title: string;
+  type: CommitmentType;
+  amount_cents: number;
+  check_in_days: boolean[] | null;
+  due_date: string | null;
+  deadline_type: DeadlineType;
+  deadline_time: string | null;
+  status: string;
+  paused_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
