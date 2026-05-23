@@ -1,6 +1,7 @@
+import { useState } from 'react';
 import * as Haptics from 'expo-haptics';
 import { AlertCircle, Check, Circle, Clock, RotateCcw, Target } from 'lucide-react-native';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -9,6 +10,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import { ThemedText } from '../ui/ThemedText';
+import { Button } from '../ui/Button';
 import { theme } from '../../constants/theme';
 import { COMMITMENT_TYPES, DEADLINE_TYPES } from '../../types/commitment';
 import type { TodayCommitment } from '../../hooks/useCommitments';
@@ -39,9 +41,15 @@ export function TodayCard({ commitment, onCheckIn }: TodayCardProps) {
   const scale = useSharedValue(1);
   const checked = commitment.isCheckedIn;
   const isMissed = commitment.isMissed;
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const handlePress = () => {
     if (checked || isMissed) return;
+    setIsModalVisible(true);
+  };
+
+  const handleConfirmCheckIn = () => {
+    setIsModalVisible(false);
     scale.value = withSpring(0.97, { damping: 15 }, () => {
       scale.value = withSpring(1);
     });
@@ -57,88 +65,147 @@ export function TodayCard({ commitment, onCheckIn }: TodayCardProps) {
   const isRoutine = commitment.type === COMMITMENT_TYPES.ROUTINE;
 
   return (
-    <Animated.View style={animatedStyle}>
-      <Pressable
-        onPress={handlePress}
-        disabled={checked || isMissed}
-        style={({ pressed }) => [
-          styles.card,
-          checked && styles.cardChecked,
-          isMissed && styles.cardMissed,
-          pressed && !checked && !isMissed && styles.cardPressed,
-        ]}
-      >
-        {/* Left accent bar */}
-        <View
-          style={[
-            styles.accent,
-            checked && styles.accentChecked,
-            isMissed && styles.accentMissed,
+    <>
+      <Animated.View style={animatedStyle}>
+        <Pressable
+          onPress={handlePress}
+          disabled={checked || isMissed}
+          style={({ pressed }) => [
+            styles.card,
+            checked && styles.cardChecked,
+            isMissed && styles.cardMissed,
+            pressed && !checked && !isMissed && styles.cardPressed,
           ]}
-        />
+        >
+          {/* Left accent bar */}
+          <View
+            style={[
+              styles.accent,
+              checked && styles.accentChecked,
+              isMissed && styles.accentMissed,
+            ]}
+          />
 
-        {/* Content */}
-        <View style={styles.content}>
-          <View style={styles.topRow}>
-            {/* Type chip and missed badge */}
-            <View style={styles.typeRow}>
-              <View style={styles.typeChip}>
-                {isRoutine ? (
-                  <RotateCcw size={10} color={isMissed ? theme.colors.error : theme.colors.primary} strokeWidth={2.5} />
-                ) : (
-                  <Target size={10} color={isMissed ? theme.colors.error : theme.colors.primary} strokeWidth={2.5} />
-                )}
-                <ThemedText variant="labelSm" style={[styles.typeLabel, isMissed && styles.typeLabelMissed]}>
-                  {isRoutine ? 'ROUTINE' : 'TASK'}
-                </ThemedText>
-              </View>
-
-              {isMissed && (
-                <View style={styles.missedBadge}>
-                  <ThemedText variant="labelSm" style={styles.missedText}>
-                    MISSED
+          {/* Content */}
+          <View style={styles.content}>
+            <View style={styles.topRow}>
+              {/* Type chip and missed badge */}
+              <View style={styles.typeRow}>
+                <View style={styles.typeChip}>
+                  {isRoutine ? (
+                    <RotateCcw size={10} color={isMissed ? theme.colors.error : theme.colors.primary} strokeWidth={2.5} />
+                  ) : (
+                    <Target size={10} color={isMissed ? theme.colors.error : theme.colors.primary} strokeWidth={2.5} />
+                  )}
+                  <ThemedText variant="labelSm" style={[styles.typeLabel, isMissed && styles.typeLabelMissed]}>
+                    {isRoutine ? 'ROUTINE' : 'TASK'}
                   </ThemedText>
                 </View>
-              )}
+
+                {isMissed && (
+                  <View style={styles.missedBadge}>
+                    <ThemedText variant="labelSm" style={styles.missedText}>
+                      MISSED
+                    </ThemedText>
+                  </View>
+                )}
+              </View>
+
+              {/* Penalty badge */}
+              <View style={[styles.penaltyBadge, isMissed && styles.penaltyBadgeMissed]}>
+                <ThemedText variant="labelSm" style={styles.penaltyText}>
+                  {formatAmount(commitment.amount_cents)}
+                </ThemedText>
+              </View>
             </View>
 
-            {/* Penalty badge */}
-            <View style={[styles.penaltyBadge, isMissed && styles.penaltyBadgeMissed]}>
-              <ThemedText variant="labelSm" style={styles.penaltyText}>
-                {formatAmount(commitment.amount_cents)}
+            <ThemedText
+              variant="bodyMd"
+              style={[styles.title, checked && styles.titleChecked]}
+            >
+              {commitment.title}
+            </ThemedText>
+
+            <View style={styles.deadlineRow}>
+              <Clock size={12} color={isMissed ? theme.colors.error : theme.colors.textMuted} strokeWidth={2} />
+              <ThemedText variant="labelSm" style={[styles.deadline, isMissed && styles.deadlineMissed]}>
+                {formatDeadline(commitment)}
               </ThemedText>
             </View>
           </View>
 
-          <ThemedText
-            variant="bodyMd"
-            style={[styles.title, checked && styles.titleChecked]}
-          >
-            {commitment.title}
-          </ThemedText>
+          {/* Checkbox */}
+          <View style={styles.checkboxContainer}>
+            {checked ? (
+              <View style={styles.checkboxFilled}>
+                <Check size={16} color={theme.colors.onPrimary} strokeWidth={3} />
+              </View>
+            ) : isMissed ? (
+              <AlertCircle size={28} color={theme.colors.error} strokeWidth={2} />
+            ) : (
+              <Circle size={28} color={theme.colors.secondary} strokeWidth={1.5} />
+            )}
+          </View>
+        </Pressable>
+      </Animated.View>
 
-          <View style={styles.deadlineRow}>
-            <Clock size={12} color={isMissed ? theme.colors.error : theme.colors.textMuted} strokeWidth={2} />
-            <ThemedText variant="labelSm" style={[styles.deadline, isMissed && styles.deadlineMissed]}>
-              {formatDeadline(commitment)}
+      <Modal
+        visible={isModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setIsModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <Pressable style={styles.modalDismissOverlay} onPress={() => setIsModalVisible(false)} />
+          
+          <View style={styles.modalContent}>
+            {/* Header Icon */}
+            <View style={styles.modalIconContainer}>
+              {isRoutine ? (
+                <RotateCcw size={28} color={theme.colors.primary} strokeWidth={2} />
+              ) : (
+                <Target size={28} color={theme.colors.primary} strokeWidth={2} />
+              )}
+            </View>
+
+            {/* Title */}
+            <ThemedText variant="headlineMd" style={styles.modalTitle}>
+              Verify Pledge
             </ThemedText>
+
+            {/* Subtitle */}
+            <ThemedText variant="bodyMd" style={styles.modalText}>
+              Are you sure you have completed your commitment for today?
+            </ThemedText>
+
+            <View style={styles.commitmentNameContainer}>
+              <ThemedText variant="labelMd" style={styles.commitmentName}>
+                {commitment.title}
+              </ThemedText>
+            </View>
+
+            <ThemedText variant="labelSm" style={styles.modalDisclaimer}>
+              Momentum relies on your honesty. Your stakes are {formatAmount(commitment.amount_cents)}.
+            </ThemedText>
+
+            {/* Action Buttons */}
+            <View style={styles.modalButtons}>
+              <Button
+                label="Cancel"
+                variant="ghost"
+                style={styles.modalButton}
+                onPress={() => setIsModalVisible(false)}
+              />
+              <Button
+                label="Yes, I did it"
+                style={styles.modalButton}
+                onPress={handleConfirmCheckIn}
+              />
+            </View>
           </View>
         </View>
-
-        {/* Checkbox */}
-        <View style={styles.checkboxContainer}>
-          {checked ? (
-            <View style={styles.checkboxFilled}>
-              <Check size={16} color={theme.colors.onPrimary} strokeWidth={3} />
-            </View>
-          ) : isMissed ? (
-            <AlertCircle size={28} color={theme.colors.error} strokeWidth={2} />
-          ) : (
-            <Circle size={28} color={theme.colors.secondary} strokeWidth={1.5} />
-          )}
-        </View>
-      </Pressable>
-    </Animated.View>
+      </Modal>
+    </>
   );
 }
 
@@ -257,5 +324,79 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(18, 20, 20, 0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: theme.spacing.lg,
+  },
+  modalDismissOverlay: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  modalContent: {
+    width: '100%',
+    maxWidth: 340,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: theme.colors.outline,
+    padding: theme.spacing.lg,
+    alignItems: 'center',
+    gap: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.44,
+    shadowRadius: 10.32,
+    elevation: 16,
+  },
+  modalIconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(185, 199, 228, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  modalTitle: {
+    color: '#E2E2E2',
+    fontFamily: 'SpaceGrotesk_600SemiBold',
+    textAlign: 'center',
+  },
+  modalText: {
+    color: theme.colors.textMuted,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  commitmentNameContainer: {
+    backgroundColor: 'rgba(100, 116, 139, 0.1)',
+    borderRadius: theme.radius.lg,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    width: '100%',
+    alignItems: 'center',
+  },
+  commitmentName: {
+    color: theme.colors.primary,
+    fontFamily: 'Inter_600SemiBold',
+    textAlign: 'center',
+  },
+  modalDisclaimer: {
+    color: theme.colors.secondary,
+    textAlign: 'center',
+    fontSize: 11,
+    lineHeight: 16,
+    marginVertical: 4,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    width: '100%',
+    gap: 12,
+    marginTop: 8,
+  },
+  modalButton: {
+    flex: 1,
   },
 });
