@@ -36,10 +36,10 @@ export default function GoalStep() {
 
         <View style={styles.header}>
           <ThemedText variant="display" style={styles.title}>
-            Choose your battle.
+            Choose your commitment.
           </ThemedText>
           <ThemedText variant="bodyLg" style={styles.subtitle}>
-            What is one habit you will commit to?
+            What is one commitment you will stick to?
           </ThemedText>
         </View>
 

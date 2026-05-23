@@ -126,3 +126,16 @@ Always use the Expo docs MCP to use Expo SDK v54 best practices. If you don't ha
 
 - **AuthProvider** — Manages Supabase session state, exposes `user`, `signIn`, `signOut`
 - **ProfileProvider** — Fetches & caches user profile, exposes `profile`, `isOnboarded`
+
+---
+
+### Naming & Tone Conventions (Commitment Theme)
+
+To maintain a highly professional, intentional, and high-stakes branding tone throughout Momentum:
+
+1. **Commitment Terminology:** Never use soft or casual terms like "Goal", "Habit", or "Battle". Always use:
+   - **Commitment:** The umbrella term for all active user pledges.
+   - **Routine:** A recurring commitment (e.g., go to gym 3x a week).
+   - **Task:** A one-time commitment (e.g., wash the car).
+2. **Serious & Direct Tone:** Focus copywriting on accountability (e.g., *"What is your commitment?"*, *"Review your pledge"*). Avoid gamified or aggressive terms like *"Choose your battle"*.
+3. **Database Mapping Consistency:** Frontend `Commitments` continue mapping to the backend `goals` table inside Supabase to preserve database integrity. Always use centralized constants from `types/commitment.ts` for all type evaluations.

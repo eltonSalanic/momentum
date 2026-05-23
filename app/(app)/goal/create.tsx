@@ -1,30 +1,30 @@
+import * as Haptics from 'expo-haptics';
+import { useRouter } from 'expo-router';
+import { ArrowLeft, ArrowRight, Calendar, CalendarRange, Check, Clock, DollarSign } from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
-  StyleSheet,
-  View,
-  TouchableOpacity,
-  ScrollView,
-  Platform,
-  TextInput,
-  KeyboardAvoidingView,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import * as Haptics from 'expo-haptics';
 import Animated from 'react-native-reanimated';
-import { Calendar, Clock, DollarSign, CalendarRange, ArrowLeft, ArrowRight, Check } from 'lucide-react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { theme } from '../../../constants/theme';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { ThemedText } from '../../../components/ui/ThemedText';
+import { theme } from '../../../constants/theme';
 import { useAuth } from '../../../context/AuthContext';
 import { supabase } from '../../../lib/supabase';
 import {
   COMMITMENT_TYPES,
-  DEADLINE_TYPES,
   CommitmentType,
+  DEADLINE_TYPES,
   DeadlineType,
 } from '../../../types/commitment';
 
@@ -51,7 +51,8 @@ export default function CreateCommitmentScreen() {
   const [amountCents, setAmountCents] = useState(500); // Default $5
   const [customStake, setCustomStake] = useState('');
   const [deadlineType, setDeadlineType] = useState<DeadlineType>(DEADLINE_TYPES.END_OF_DAY);
-  const [deadlineTime, setDeadlineTime] = useState('18:00'); // Default 6:00 PM
+  const [deadlineTime, setDeadlineTime] = useState('06:00'); // Default 6:00
+  const [timePeriod, setTimePeriod] = useState<'AM' | 'PM'>('PM'); // Default PM
 
   // Calendar State
   const [calMonth, setCalMonth] = useState(new Date().getMonth());
@@ -74,6 +75,16 @@ export default function CreateCommitmentScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert('Date Required', 'Please select a deadline date for your Task.');
       return;
+    }
+    if (step === 3 && deadlineType === DEADLINE_TYPES.SPECIFIC_TIME) {
+      const [hoursStr, minutesStr] = deadlineTime.split(':');
+      const hours = parseInt(hoursStr, 10);
+      const minutes = parseInt(minutesStr, 10);
+      if (isNaN(hours) || isNaN(minutes) || hours < 1 || hours > 12 || minutes < 0 || minutes > 59 || deadlineTime.length !== 5) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        Alert.alert('Invalid Time', 'Please enter a valid time in 12-hour format (e.g., 01:00 to 12:59).');
+        return;
+      }
     }
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -178,6 +189,25 @@ export default function CreateCommitmentScreen() {
         ? dueDate.toISOString().split('T')[0] 
         : null;
 
+      let dbDeadlineTime = null;
+      if (deadlineType === DEADLINE_TYPES.SPECIFIC_TIME) {
+        const [hoursStr, minutesStr] = deadlineTime.split(':');
+        let hours = parseInt(hoursStr, 10);
+        const minutes = parseInt(minutesStr, 10);
+        if (!isNaN(hours) && !isNaN(minutes)) {
+          if (timePeriod === 'PM' && hours < 12) {
+            hours += 12;
+          } else if (timePeriod === 'AM' && hours === 12) {
+            hours = 0;
+          }
+          const padHours = hours < 10 ? `0${hours}` : `${hours}`;
+          const padMinutes = minutes < 10 ? `0${minutes}` : `${minutes}`;
+          dbDeadlineTime = `${padHours}:${padMinutes}`;
+        } else {
+          dbDeadlineTime = '18:00'; // Fallback
+        }
+      }
+
       const { error } = await supabase.from('goals').insert({
         user_id: user.id,
         title: title.trim(),
@@ -186,7 +216,7 @@ export default function CreateCommitmentScreen() {
         type,
         due_date: formattedDate,
         deadline_type: deadlineType,
-        deadline_time: deadlineType === DEADLINE_TYPES.SPECIFIC_TIME ? deadlineTime : null,
+        deadline_time: dbDeadlineTime,
         status: 'active',
       });
 
@@ -217,13 +247,7 @@ export default function CreateCommitmentScreen() {
 
   const getDeadlineSummary = () => {
     if (deadlineType === DEADLINE_TYPES.END_OF_DAY) return 'End of Day (11:59 PM)';
-    // Format custom time for display
-    const [hours, minutes] = deadlineTime.split(':').map(Number);
-    if (isNaN(hours) || isNaN(minutes)) return `${deadlineTime}`;
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    const dispHours = hours % 12 === 0 ? 12 : hours % 12;
-    const dispMinutes = minutes < 10 ? `0${minutes}` : minutes;
-    return `${dispHours}:${dispMinutes} ${ampm}`;
+    return `${deadlineTime} ${timePeriod}`;
   };
 
   // Render sub-components representing form steps
@@ -233,7 +257,7 @@ export default function CreateCommitmentScreen() {
         return (
           <View style={styles.card}>
             <ThemedText variant="headlineMd" style={styles.stepTitle}>
-              Name your battle.
+              What is your commitment?
             </ThemedText>
             <ThemedText variant="bodyMd" style={styles.stepSubtitle}>
               What are you promising to complete? Be specific so you stay honest.
@@ -248,7 +272,14 @@ export default function CreateCommitmentScreen() {
                 }}
               >
                 <CalendarRange size={20} color={type === COMMITMENT_TYPES.ROUTINE ? theme.colors.onPrimary : theme.colors.secondary} />
-                <ThemedText variant="labelMd" style={{ color: type === COMMITMENT_TYPES.ROUTINE ? theme.colors.onPrimary : theme.colors.text }}>
+                <ThemedText 
+                  variant="labelMd" 
+                  style={{ 
+                    color: type === COMMITMENT_TYPES.ROUTINE ? theme.colors.onPrimary : theme.colors.text,
+                    textAlign: 'center',
+                    flexShrink: 1,
+                  }}
+                >
                   Routine
                 </ThemedText>
               </TouchableOpacity>
@@ -261,7 +292,14 @@ export default function CreateCommitmentScreen() {
                 }}
               >
                 <Calendar size={20} color={type === COMMITMENT_TYPES.TASK ? theme.colors.onPrimary : theme.colors.secondary} />
-                <ThemedText variant="labelMd" style={{ color: type === COMMITMENT_TYPES.TASK ? theme.colors.onPrimary : theme.colors.text }}>
+                <ThemedText 
+                  variant="labelMd" 
+                  style={{ 
+                    color: type === COMMITMENT_TYPES.TASK ? theme.colors.onPrimary : theme.colors.text,
+                    textAlign: 'center',
+                    flexShrink: 1,
+                  }}
+                >
                   One-time Task
                 </ThemedText>
               </TouchableOpacity>
@@ -400,7 +438,7 @@ export default function CreateCommitmentScreen() {
             <View style={styles.presetsGrid}>
               {STAKE_PRESETS.map((preset) => {
                 const cents = preset * 100;
-                const isActive = amountCents === cents && !customStake;
+                const isActive = amountCents === cents;
                 return (
                   <TouchableOpacity
                     key={preset}
@@ -471,15 +509,36 @@ export default function CreateCommitmentScreen() {
                   <TextInput
                     style={styles.timeInput}
                     keyboardType="numeric"
-                    placeholder="18:00"
+                    placeholder="06:00"
                     placeholderTextColor={theme.colors.textMuted}
                     maxLength={5}
                     value={deadlineTime}
                     onChangeText={handleTimeChange}
                   />
-                  <ThemedText variant="labelSm" color="secondary">
-                    Use 24h format (e.g. 18:00 for 6 PM)
-                  </ThemedText>
+                  <View style={styles.periodContainer}>
+                    <TouchableOpacity
+                      style={[styles.periodButton, timePeriod === 'AM' && styles.periodButtonActive]}
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        setTimePeriod('AM');
+                      }}
+                    >
+                      <ThemedText variant="labelSm" style={[styles.periodText, timePeriod === 'AM' && styles.periodTextActive]}>
+                        AM
+                      </ThemedText>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.periodButton, timePeriod === 'PM' && styles.periodButtonActive]}
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        setTimePeriod('PM');
+                      }}
+                    >
+                      <ThemedText variant="labelSm" style={[styles.periodText, timePeriod === 'PM' && styles.periodTextActive]}>
+                        PM
+                      </ThemedText>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               )}
             </View>
@@ -693,15 +752,17 @@ const styles = StyleSheet.create({
   },
   typeButton: {
     flex: 1,
-    height: 50,
+    minHeight: 52,
+    paddingVertical: 6,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: theme.spacing.sm,
+    gap: 6,
     borderWidth: 1,
     borderColor: theme.colors.outline,
     borderRadius: theme.radius.md,
     backgroundColor: 'transparent',
+    paddingHorizontal: theme.spacing.sm,
   },
   typeButtonActive: {
     backgroundColor: theme.colors.primary,
@@ -900,6 +961,31 @@ const styles = StyleSheet.create({
     fontFamily: theme.typography.bodyMd.fontFamily,
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  periodContainer: {
+    flexDirection: 'row',
+    backgroundColor: theme.colors.surfaceVariant,
+    borderRadius: theme.radius.sm,
+    padding: 2,
+    marginLeft: 'auto',
+  },
+  periodButton: {
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: 6,
+    borderRadius: theme.radius.sm,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  periodButtonActive: {
+    backgroundColor: theme.colors.primary,
+  },
+  periodText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: theme.colors.textMuted,
+  },
+  periodTextActive: {
+    color: theme.colors.onPrimary,
   },
   summaryCard: {
     backgroundColor: theme.colors.background,
