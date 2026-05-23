@@ -58,12 +58,11 @@ export function useCommitments() {
 
     const { dateStr, dayIndex } = getLocalToday();
 
-    // Fetch all active commitments for this user
+    // Fetch all commitments for this user (both active and paused)
     const { data: goals, error: goalsError } = await supabase
       .from('goals')
       .select('*')
       .eq('user_id', user.id)
-      .eq('status', 'active')
       .order('created_at', { ascending: false });
 
     if (goalsError) {
@@ -93,9 +92,12 @@ export function useCommitments() {
     const currentHour = now.getHours();
     const currentMin = now.getMinutes();
 
-    // Filter commitments that are due today, or tasks that were due in the past and are still active
+    // Filter commitments that are active and due today, or tasks that were due in the past and are still active
     const dueToday: TodayCommitment[] = allCommitments
       .filter((c) => {
+        if (c.status === 'paused') {
+          return false;
+        }
         if (c.type === COMMITMENT_TYPES.ROUTINE) {
           return c.check_in_days != null && c.check_in_days[dayIndex] === true;
         }

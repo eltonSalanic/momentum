@@ -1,5 +1,6 @@
 import { Calendar, Clock, RotateCcw, Target } from 'lucide-react-native';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { useRouter } from 'expo-router';
 
 import { ThemedText } from '../ui/ThemedText';
 import { theme } from '../../constants/theme';
@@ -49,36 +50,88 @@ function getLocalTodayStr(): string {
 }
 
 export function CommitmentRow({ commitment }: CommitmentRowProps) {
+  const router = useRouter();
   const isRoutine = commitment.type === COMMITMENT_TYPES.ROUTINE;
-  const isMissed = !isRoutine && commitment.due_date != null && commitment.due_date < getLocalTodayStr();
+  const isPaused = commitment.status === 'paused';
+  const isMissed = !isPaused && !isRoutine && commitment.due_date != null && commitment.due_date < getLocalTodayStr();
+
+  const handlePress = () => {
+    router.push({
+      pathname: '/goal/[id]',
+      params: { id: commitment.id },
+    });
+  };
 
   return (
-    <View style={[styles.card, isMissed && styles.cardMissed]}>
+    <Pressable
+      onPress={handlePress}
+      style={({ pressed }) => [
+        styles.card,
+        isMissed && styles.cardMissed,
+        isPaused && styles.cardPaused,
+        pressed && styles.cardPressed,
+      ]}
+    >
       <View style={styles.header}>
         {/* Type + Title */}
         <View style={styles.titleRow}>
-          <View style={[styles.iconContainer, isMissed && styles.iconContainerMissed]}>
+          <View style={[
+            styles.iconContainer, 
+            isMissed && styles.iconContainerMissed,
+            isPaused && styles.iconContainerPaused
+          ]}>
             {isRoutine ? (
-              <RotateCcw size={14} color={isMissed ? theme.colors.error : theme.colors.primary} strokeWidth={2} />
+              <RotateCcw 
+                size={14} 
+                color={isPaused ? theme.colors.secondary : isMissed ? theme.colors.error : theme.colors.primary} 
+                strokeWidth={2} 
+              />
             ) : (
-              <Target size={14} color={isMissed ? theme.colors.error : theme.colors.primary} strokeWidth={2} />
+              <Target 
+                size={14} 
+                color={isPaused ? theme.colors.secondary : isMissed ? theme.colors.error : theme.colors.primary} 
+                strokeWidth={2} 
+              />
             )}
           </View>
-          <ThemedText variant="bodyMd" style={[styles.title, isMissed && styles.titleMissed]} numberOfLines={1}>
+          <ThemedText 
+            variant="bodyMd" 
+            style={[
+              styles.title, 
+              isMissed && styles.titleMissed,
+              isPaused && styles.titlePaused
+            ]} 
+            numberOfLines={1}
+          >
             {commitment.title}
           </ThemedText>
-          {isMissed && (
+          {isPaused ? (
+            <View style={styles.pausedBadge}>
+              <ThemedText variant="labelSm" style={styles.pausedText}>
+                PAUSED
+              </ThemedText>
+            </View>
+          ) : isMissed ? (
             <View style={styles.missedBadge}>
               <ThemedText variant="labelSm" style={styles.missedText}>
                 MISSED
               </ThemedText>
             </View>
-          )}
+          ) : null}
         </View>
 
         {/* Penalty */}
-        <View style={[styles.penaltyBadge, isMissed && styles.penaltyBadgeMissed]}>
-          <ThemedText variant="labelSm" style={styles.penaltyText}>
+        <View style={[
+          styles.penaltyBadge, 
+          isPaused ? styles.penaltyBadgePaused : isMissed && styles.penaltyBadgeMissed
+        ]}>
+          <ThemedText 
+            variant="labelSm" 
+            style={[
+              styles.penaltyText,
+              isPaused && styles.penaltyTextPaused
+            ]}
+          >
             {formatAmount(commitment.amount_cents)}
           </ThemedText>
         </View>
@@ -94,6 +147,7 @@ export function CommitmentRow({ commitment }: CommitmentRowProps) {
                 style={[
                   styles.dayDot,
                   commitment.check_in_days![i] && styles.dayDotActive,
+                  isPaused && styles.dayDotPaused,
                 ]}
               >
                 <ThemedText
@@ -101,6 +155,7 @@ export function CommitmentRow({ commitment }: CommitmentRowProps) {
                   style={[
                     styles.dayLetter,
                     commitment.check_in_days![i] && styles.dayLetterActive,
+                    isPaused && styles.dayLetterPaused,
                   ]}
                 >
                   {letter}
@@ -110,21 +165,43 @@ export function CommitmentRow({ commitment }: CommitmentRowProps) {
           </View>
         ) : (
           <View style={styles.dueDateRow}>
-            <Calendar size={11} color={isMissed ? theme.colors.error : theme.colors.textMuted} strokeWidth={2} />
-            <ThemedText variant="labelSm" style={[styles.metaText, isMissed && styles.metaTextMissed]}>
+            <Calendar 
+              size={11} 
+              color={isPaused ? theme.colors.secondary : isMissed ? theme.colors.error : theme.colors.textMuted} 
+              strokeWidth={2} 
+            />
+            <ThemedText 
+              variant="labelSm" 
+              style={[
+                styles.metaText, 
+                isMissed && styles.metaTextMissed,
+                isPaused && styles.metaTextPaused
+              ]}
+            >
               {commitment.due_date ? formatDueDate(commitment.due_date) : 'No date'}
             </ThemedText>
           </View>
         )}
 
         <View style={styles.deadlineRow}>
-          <Clock size={11} color={isMissed ? theme.colors.error : theme.colors.textMuted} strokeWidth={2} />
-          <ThemedText variant="labelSm" style={[styles.metaText, isMissed && styles.metaTextMissed]}>
+          <Clock 
+            size={11} 
+            color={isPaused ? theme.colors.secondary : isMissed ? theme.colors.error : theme.colors.textMuted} 
+            strokeWidth={2} 
+          />
+          <ThemedText 
+            variant="labelSm" 
+            style={[
+              styles.metaText, 
+              isMissed && styles.metaTextMissed,
+              isPaused && styles.metaTextPaused
+            ]}
+          >
             {formatDeadlineInfo(commitment)}
           </ThemedText>
         </View>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -141,6 +218,10 @@ const styles = StyleSheet.create({
   cardMissed: {
     borderColor: 'rgba(255, 180, 171, 0.35)',
     backgroundColor: 'rgba(255, 180, 171, 0.02)',
+  },
+  cardPressed: {
+    opacity: 0.85,
+    backgroundColor: 'rgba(185, 199, 228, 0.05)',
   },
   header: {
     flexDirection: 'row',
@@ -242,5 +323,41 @@ const styles = StyleSheet.create({
   },
   metaTextMissed: {
     color: theme.colors.error,
+  },
+  metaTextPaused: {
+    color: theme.colors.secondary,
+  },
+  cardPaused: {
+    opacity: 0.6,
+    borderColor: 'rgba(100, 116, 139, 0.1)',
+  },
+  iconContainerPaused: {
+    backgroundColor: 'rgba(100, 116, 139, 0.08)',
+  },
+  titlePaused: {
+    color: theme.colors.secondary,
+  },
+  pausedBadge: {
+    backgroundColor: 'rgba(100, 116, 139, 0.12)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: theme.radius.full,
+  },
+  pausedText: {
+    color: theme.colors.secondary,
+    fontSize: 9,
+    letterSpacing: 0.5,
+  },
+  penaltyBadgePaused: {
+    backgroundColor: 'rgba(100, 116, 139, 0.06)',
+  },
+  penaltyTextPaused: {
+    color: theme.colors.secondary,
+  },
+  dayDotPaused: {
+    backgroundColor: 'rgba(100, 116, 139, 0.05)',
+  },
+  dayLetterPaused: {
+    color: theme.colors.secondary,
   },
 });

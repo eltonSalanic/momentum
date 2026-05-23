@@ -32,6 +32,15 @@ export default function AppLayout() {
           animation: 'slide_from_bottom',
         }}
       />
+
+      {/* Edit/Detail Goal — slides up as a modal */}
+      <Stack.Screen
+        name="goal/[id]"
+        options={{
+          presentation: 'modal',
+          animation: 'slide_from_bottom',
+        }}
+      />
     </Stack>
   );
 }
