@@ -1,13 +1,13 @@
-I am creating an app called “Momentum” using React Native, Typescript, and Supabase. It helps procrastinators stay consistent by attaching real consequences to unfinished goals.
+I am creating an app called “Momentum” using React Native, Typescript, and Supabase. It helps procrastinators stay consistent by attaching real consequences to unfinished commitments.
 
-The idea is to have users create "Goals" or "Tasks" that represent things they want to stay consistent on. They must login everyday (on days they determin) to check-in when they've completed a task they were planning. If they don't login when they're supposed to. They get charged an amount they predetermine when creating a goal.
+The idea is to have users create "Commitments" (either recurring "Routines" or one-time "Tasks") that represent things they want to stay consistent on or accomplish. They must check-in when they've completed the commitment for the day or deadline. If they don't check-in before their predetermined deadline (either End of Day or a Specific Time), they get charged a penalty amount they predetermine when creating the commitment.
 
-A check-in involves users simply opening the app, selecting the goal, and marking complete for the day. No verification required, as the entire point of the app relies on the user, at least for now.
+A check-in involves users simply opening the app, selecting the commitment, and marking it complete. No verification required, as the entire point of the app relies on the user, at least for now.
 
 We are currently working on the MVP, so all your answers should be based on that fact.
 
 FEATURES
-Goals: A commitment a user creates that they must check-in to, or they get charged for it
+Commitments: A recurring Routine or one-time Task a user creates that they must check-in to, or they get charged a penalty amount for failing to do so.
 
 Must Haves
 
@@ -15,10 +15,13 @@ Must Haves
   - [ ] Add their credit card
   - [ ] Add their timezone
   - [ ] Add first name and last name
-- [ ] Create goals
-  - [ ] Set days to check-in
-  - [ ] Set punishment amount ($$$)
-- [ ] If user doesn’t check-in, they get charged
+- [ ] Create Commitments
+  - [ ] Choose type: Routine (recurring) or Task (one-time)
+  - [ ] For Routines: Set active days to check-in (Mon-Sun toggles)
+  - [ ] For Tasks: Set single completion deadline date
+  - [ ] Set penalty amount ($$$)
+  - [ ] Choose deadline timing: End of Day (11:59 PM) or Specific Time (Custom Time picker)
+- [ ] If user doesn’t check-in by the deadline, they get charged
 - [ ] Free 14 day trial
 - [ ] Pausing goal
 - [ ] Edit profile
@@ -78,12 +81,12 @@ app/
 ├── (tabs)/                        # Main app (authenticated + onboarded)
 │   ├── _layout.tsx                # Bottom tab navigator
 │   ├── index.tsx                  # HOME — Today's check-ins
-│   ├── goals.tsx                  # GOALS — All goals list
+│   ├── commitments.tsx            # COMMITMENTS — All commitments list
 │   └── settings.tsx               # SETTINGS — Profile & account
 │
-├── goal/                          # Goal-related screens
-│   ├── create.tsx                 # Create a new goal
-│   └── [id].tsx                   # Goal detail (edit, pause, view history)
+├── commitment/                    # Commitment-related screens
+│   ├── create.tsx                 # Create a new commitment (Routine/Task flow)
+│   └── [id].tsx                   # Commitment detail (edit, pause, view history)
 │
 ├── profile/
 │   └── edit.tsx                   # Edit name, timezone, payment method
@@ -109,13 +112,13 @@ Always use the Expo docs MCP to use Expo SDK v54 best practices. If you don't ha
 
 #### (tabs) — Main App
 
-- **Home** — Today's goals that need check-in. Tap to mark complete. Along with a list of all current goals.
+- **Home** — Today's active commitments (Routines and Tasks) that need check-in. Tap to mark complete. Along with a list of all current commitments.
 - **Settings** — Profile info, payment method, charges history link, sign out.
 
 #### Standalone Screens
 
-- **goal/create** — Title, amount ($), day picker (Mon–Sun toggles)
-- **goal/[id]** — View check-in history, edit, pause/resume, cancel
+- **goal/create** — Set up a Commitment: Routine vs Task selection, schedule (days or single date), penalty amount ($), and deadline timing (End of Day vs Specific Time)
+- **goal/[id]** — View commitment details, check-in history, edit, pause/resume, cancel
 - **profile/edit** — Change name, timezone, payment method
 - **charges** — Read-only list of past penalties with status
 
@@ -123,3 +126,16 @@ Always use the Expo docs MCP to use Expo SDK v54 best practices. If you don't ha
 
 - **AuthProvider** — Manages Supabase session state, exposes `user`, `signIn`, `signOut`
 - **ProfileProvider** — Fetches & caches user profile, exposes `profile`, `isOnboarded`
+
+---
+
+### Naming & Tone Conventions (Commitment Theme)
+
+To maintain a highly professional, intentional, and high-stakes branding tone throughout Momentum:
+
+1. **Commitment Terminology:** Never use soft or casual terms like "Goal", "Habit", or "Battle". Always use:
+   - **Commitment:** The umbrella term for all active user pledges.
+   - **Routine:** A recurring commitment (e.g., go to gym 3x a week).
+   - **Task:** A one-time commitment (e.g., wash the car).
+2. **Serious & Direct Tone:** Focus copywriting on accountability (e.g., *"What is your commitment?"*, *"Review your pledge"*). Avoid gamified or aggressive terms like *"Choose your battle"*.
+3. **Database Mapping Consistency:** Frontend `Commitments` continue mapping to the backend `goals` table inside Supabase to preserve database integrity. Always use centralized constants from `types/commitment.ts` for all type evaluations.
