@@ -1,6 +1,8 @@
+import { useCallback } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Sparkles } from 'lucide-react-native';
+import { useFocusEffect } from 'expo-router';
+import { ArrowDown, Sparkles } from 'lucide-react-native';
 
 import { ThemedText } from '../../../components/ui/ThemedText';
 import { SectionHeader } from '../../../components/home/SectionHeader';
@@ -31,19 +33,15 @@ export default function HomeScreen() {
     checkIn,
   } = useCommitments();
 
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh])
+  );
+
   const firstName = profile?.first_name ?? 'there';
   const pendingCount = todayCommitments.filter((c) => !c.isCheckedIn).length;
   const allCheckedIn = todayCommitments.length > 0 && pendingCount === 0;
-
-  if (isLoading) {
-    return (
-      <View style={[styles.container, { paddingTop: insets.top + 24 }]}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
-        </View>
-      </View>
-    );
-  }
 
   return (
     <ScrollView
@@ -59,24 +57,44 @@ export default function HomeScreen() {
         />
       }
     >
-      {/* Header */}
-      <View style={styles.header}>
-        <ThemedText variant="headlineLg">
-          Hey, {firstName}
-        </ThemedText>
-        <ThemedText variant="labelMd" style={styles.date}>
-          {getGreetingDate()}
-        </ThemedText>
+      {/* Header Row */}
+      <View style={styles.headerRow}>
+        <View style={styles.header}>
+          <ThemedText variant="headlineLg">
+            Hey, {firstName}
+          </ThemedText>
+          <ThemedText variant="labelMd" style={styles.date}>
+            {getGreetingDate()}
+          </ThemedText>
+        </View>
+
+        <View style={styles.refreshHint}>
+          {isRefreshing ? (
+            <ActivityIndicator size="small" color={theme.colors.primary} style={{ transform: [{ scale: 0.7 }] }} />
+          ) : (
+            <ArrowDown size={10} color={theme.colors.secondary} strokeWidth={2.5} />
+          )}
+          <ThemedText variant="labelSm" style={styles.refreshHintText}>
+            {isRefreshing ? 'Syncing...' : 'Pull to refresh'}
+          </ThemedText>
+        </View>
       </View>
 
       {/* Section 1: Today */}
       <View style={styles.section}>
         <SectionHeader
           title="Today"
-          count={todayCommitments.length > 0 ? pendingCount : undefined}
+          count={!isLoading && todayCommitments.length > 0 ? pendingCount : undefined}
         />
 
-        {todayCommitments.length === 0 ? (
+        {isLoading || (isRefreshing && todayCommitments.length === 0) ? (
+          <View style={styles.inlineLoading}>
+            <ActivityIndicator size="small" color={theme.colors.primary} />
+            <ThemedText variant="bodyMd" style={styles.inlineLoadingText}>
+              Fetching tasks...
+            </ThemedText>
+          </View>
+        ) : todayCommitments.length === 0 ? (
           <View style={styles.emptyState}>
             <Sparkles size={32} color={theme.colors.secondary} strokeWidth={1.5} />
             <ThemedText variant="bodyMd" style={styles.emptyText}>
@@ -94,16 +112,23 @@ export default function HomeScreen() {
           </View>
         ) : null}
 
-        {todayCommitments.map((c) => (
+        {!isLoading && todayCommitments.map((c) => (
           <TodayCard key={c.id} commitment={c} onCheckIn={checkIn} />
         ))}
       </View>
 
       {/* Section 2: All Commitments */}
       <View style={styles.section}>
-        <SectionHeader title="All Commitments" count={commitments.length} />
+        <SectionHeader title="All Commitments" count={!isLoading ? commitments.length : undefined} />
 
-        {commitments.length === 0 ? (
+        {isLoading || (isRefreshing && commitments.length === 0) ? (
+          <View style={styles.inlineLoading}>
+            <ActivityIndicator size="small" color={theme.colors.primary} />
+            <ThemedText variant="bodyMd" style={styles.inlineLoadingText}>
+              Fetching commitments...
+            </ThemedText>
+          </View>
+        ) : commitments.length === 0 ? (
           <View style={styles.emptyState}>
             <ThemedText variant="bodyMd" style={styles.emptyText}>
               No active commitments yet.{'\n'}Tap + to create your first one.
@@ -133,12 +158,32 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing.xl,
+  },
   header: {
     gap: 4,
-    marginBottom: theme.spacing.xl,
   },
   date: {
     color: theme.colors.textMuted,
+  },
+  refreshHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(100, 116, 139, 0.08)',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: theme.radius.full,
+    marginTop: 6,
+  },
+  refreshHintText: {
+    color: theme.colors.secondary,
+    fontSize: 10,
+    fontFamily: 'Inter_500Medium',
   },
   section: {
     marginBottom: theme.spacing.xl,
@@ -158,5 +203,16 @@ const styles = StyleSheet.create({
     fontSize: 44,
     lineHeight: 52,
     textAlign: 'center',
+  },
+  inlineLoading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: theme.spacing.lg,
+  },
+  inlineLoadingText: {
+    color: theme.colors.secondary,
+    fontFamily: 'Inter_400Regular',
   },
 });
