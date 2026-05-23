@@ -203,11 +203,36 @@ serve(async (req) => {
           console.error(`Missing stripe_customer_id for user ${commitment.user_id}. Charging failed.`);
         } else {
           try {
+            // 1. Retrieve the customer details from Stripe to find their default payment method
+            const customer = await stripe.customers.retrieve(stripeCustomerId);
+            if ('deleted' in customer) {
+              throw new Error('Stripe customer is deleted.');
+            }
+
+            let paymentMethodId = customer.invoice_settings?.default_payment_method;
+
+            // 2. Fallback: If no default invoice payment method, list their saved cards and use the first one
+            if (!paymentMethodId) {
+              const paymentMethods = await stripe.paymentMethods.list({
+                customer: stripeCustomerId,
+                type: 'card',
+                limit: 1,
+              });
+              if (paymentMethods.data.length > 0) {
+                paymentMethodId = paymentMethods.data[0].id;
+              }
+            }
+
+            if (!paymentMethodId) {
+              throw new Error('No default payment method or saved card found.');
+            }
+
             // Trigger off-session payment charging their saved card
             const paymentIntent = await stripe.paymentIntents.create({
               amount: commitment.amount_cents,
               currency: 'usd',
               customer: stripeCustomerId,
+              payment_method: paymentMethodId as string,
               off_session: true,
               confirm: true,
               description: `Momentum Penalty: Missed check-in for "${commitment.title}"`,
