@@ -11,6 +11,17 @@ import { CommitmentRow } from '../../../components/home/CommitmentRow';
 import { theme } from '../../../constants/theme';
 import { useAuth } from '../../../context/AuthContext';
 import { useCommitments } from '../../../hooks/useCommitments';
+import { COMMITMENT_TYPES } from '../../../types/commitment';
+
+const DAYS_OF_WEEK = [
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+  'Sunday',
+];
 
 function getGreetingDate(): string {
   const now = new Date();
@@ -42,6 +53,49 @@ export default function HomeScreen() {
   const firstName = profile?.first_name ?? 'there';
   const pendingCount = todayCommitments.filter((c) => !c.isCheckedIn).length;
   const allCheckedIn = todayCommitments.length > 0 && pendingCount === 0;
+
+  const getWeekdayIndex = (dateStr: string): number => {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const date = new Date(y, m - 1, d);
+    const day = date.getDay(); // 0 = Sun, 1 = Mon ...
+    const daysMap = [6, 0, 1, 2, 3, 4, 5];
+    return daysMap[day];
+  };
+
+  const getTodayIndex = (): number => {
+    const now = new Date();
+    const dayName = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(now);
+    const DAYS_MAP: Record<string, number> = {
+      Monday: 0,
+      Tuesday: 1,
+      Wednesday: 2,
+      Thursday: 3,
+      Friday: 4,
+      Saturday: 5,
+      Sunday: 6,
+    };
+    return DAYS_MAP[dayName] ?? 0;
+  };
+
+  const todayIndex = getTodayIndex();
+
+  const groupedCommitments = DAYS_OF_WEEK.map((dayName, dayIndex) => {
+    const items = commitments.filter((c) => {
+      if (c.type === COMMITMENT_TYPES.ROUTINE) {
+        return c.check_in_days != null && c.check_in_days[dayIndex] === true;
+      }
+      if (c.type === COMMITMENT_TYPES.TASK && c.due_date) {
+        return getWeekdayIndex(c.due_date) === dayIndex;
+      }
+      return false;
+    });
+
+    return {
+      dayName,
+      dayIndex,
+      items,
+    };
+  }).filter((g) => g.items.length > 0);
 
   return (
     <ScrollView
@@ -135,7 +189,22 @@ export default function HomeScreen() {
             </ThemedText>
           </View>
         ) : (
-          commitments.map((c) => <CommitmentRow key={c.id} commitment={c} />)
+          groupedCommitments.map((group) => {
+            const isToday = group.dayIndex === todayIndex;
+            return (
+              <View key={group.dayName} style={styles.dayGroup}>
+                <ThemedText
+                  variant="labelSm"
+                  style={[styles.dayHeader, isToday && styles.dayHeaderToday]}
+                >
+                  {group.dayName.toUpperCase()} {isToday ? '(TODAY)' : ''}
+                </ThemedText>
+                {group.items.map((c) => (
+                  <CommitmentRow key={c.id} commitment={c} />
+                ))}
+              </View>
+            );
+          })
         )}
       </View>
 
@@ -214,5 +283,20 @@ const styles = StyleSheet.create({
   inlineLoadingText: {
     color: theme.colors.secondary,
     fontFamily: 'Inter_400Regular',
+  },
+  dayGroup: {
+    marginBottom: theme.spacing.md,
+  },
+  dayHeader: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11,
+    letterSpacing: 1,
+    color: theme.colors.secondary,
+    marginTop: theme.spacing.sm,
+    marginBottom: theme.spacing.xs,
+    paddingLeft: theme.spacing.xs,
+  },
+  dayHeaderToday: {
+    color: theme.colors.primary,
   },
 });
