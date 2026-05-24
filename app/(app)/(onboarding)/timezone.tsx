@@ -1,11 +1,13 @@
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { FlatList, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../../../components/ui/Button';
 import { ThemedText } from '../../../components/ui/ThemedText';
 import { theme } from '../../../constants/theme';
 import { useOnboarding } from '../../../context/OnboardingContext';
+import { useAuth } from '../../../context/AuthContext';
+import { supabase } from '../../../lib/supabase';
 import { Ionicons } from '@expo/vector-icons';
 
 // A subset of common timezones for the search/picker
@@ -29,7 +31,9 @@ const COMMON_TIMEZONES = [
 export default function TimezoneStep() {
   const router = useRouter();
   const { data, updateData } = useOnboarding();
+  const { user, refreshProfile } = useAuth();
   const [search, setSearch] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Ensure the detected timezone is in the list or add it
   const detectedTz = data.timezone;
@@ -39,8 +43,29 @@ export default function TimezoneStep() {
     tz.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleNext = () => {
-    router.push('/(app)/(onboarding)/goal');
+  const handleFinish = async () => {
+    if (!user) return;
+    setIsSubmitting(true);
+    try {
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          first_name: data.firstName,
+          last_name: data.lastName,
+          timezone: data.timezone,
+          has_completed_onboarding: true,
+        })
+        .eq('id', user.id);
+
+      if (profileError) throw profileError;
+
+      await refreshProfile();
+      router.replace('/(app)/(tabs)');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Something went wrong while saving your profile.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -49,7 +74,7 @@ export default function TimezoneStep() {
         <View style={styles.content}>
           {/* Progress Indicator */}
           <View style={styles.progressContainer}>
-            <View style={[styles.progressBar, { width: '50%' }]} />
+            <View style={[styles.progressBar, { width: '100%' }]} />
           </View>
 
           <View style={styles.header}>
@@ -103,17 +128,26 @@ export default function TimezoneStep() {
 
         <View style={styles.footer}>
           <Button
-            label="Continue"
-            onPress={handleNext}
+            label={isSubmitting ? 'Finalizing...' : 'Finish & Start'}
+            onPress={handleFinish}
+            disabled={isSubmitting}
             variant="primary"
           />
           <Button
             label="Back"
             onPress={() => router.back()}
+            disabled={isSubmitting}
             variant="ghost"
           />
         </View>
       </View>
+
+      {isSubmitting && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <ThemedText style={styles.loadingText}>Building your momentum...</ThemedText>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -202,5 +236,17 @@ const styles = StyleSheet.create({
   footer: {
     padding: theme.spacing.xl,
     gap: theme.spacing.md,
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(12, 14, 14, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: theme.spacing.md,
+  },
+  loadingText: {
+    marginTop: theme.spacing.md,
+    color: theme.colors.primary,
+    fontWeight: 'bold',
   },
 });

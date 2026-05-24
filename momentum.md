@@ -79,9 +79,7 @@ app/
     ├── (onboarding)/              # Sequential setup flow (uses OnboardingProvider)
     │   ├── _layout.tsx            # Onboarding stack layout
     │   ├── index.tsx              # Step 1: Collect first & last name ✅
-    │   ├── timezone.tsx           # Step 2: Set timezone ✅
-    │   ├── goal.tsx               # Step 3: Set up first commitment ✅
-    │   └── payment.tsx            # Step 4: Add credit card (Stripe) ✅
+    │   └── timezone.tsx           # Step 2: Set timezone & complete setup ✅
     │
     ├── (tabs)/                    # Main tabbed app
     │   ├── _layout.tsx            # Bottom tab navigator with custom floating action button
@@ -105,10 +103,8 @@ Always use the Expo docs MCP to use Expo SDK v54 best practices. If you don't ha
 
 #### (app)/(onboarding) — First-Time Setup (sequential, non-skippable)
 
-- **index** — Collect first & last name → UPDATE profile onboarding state ✅
-- **timezone** — Set timezone → UPDATE profile onboarding state ✅
-- **goal** — Choose first commitment (title, schedule, stakes) → UPDATE onboarding state ✅
-- **payment** — Add credit card via Stripe → Save Stripe customer & complete onboarding ✅
+- **index** — Collect first & last name ✅
+- **timezone** — Set timezone → Save profile and complete onboarding ✅
 
 #### (app)/(tabs) — Main App
 

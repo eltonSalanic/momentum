@@ -30,7 +30,7 @@ export default function ProfileStep() {
         >
           {/* Progress Indicator */}
           <View style={styles.progressContainer}>
-            <View style={[styles.progressBar, { width: '25%' }]} />
+            <View style={[styles.progressBar, { width: '50%' }]} />
           </View>
 
           <View style={styles.header}>

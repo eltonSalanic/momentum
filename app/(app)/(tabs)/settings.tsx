@@ -351,9 +351,7 @@ export default function SettingsScreen() {
               <View style={styles.glassHeader}>
                 <CreditCard size={22} color="#D1D5DB" />
                 <ThemedText variant="labelSm" style={styles.securedLogo}>
-                  {cardDetails
-                    ? `${cardDetails.brand.toUpperCase()} SECURED`
-                    : 'MOMENTUM CONGRUENCE'}
+                  {cardDetails ? `${cardDetails.brand.toUpperCase()} SECURED` : ''}
                 </ThemedText>
               </View>
 
