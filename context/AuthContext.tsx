@@ -7,6 +7,8 @@ interface Profile {
   first_name: string | null;
   last_name: string | null;
   has_completed_onboarding: boolean;
+  timezone: string | null;
+  stripe_customer_id: string | null;
 }
 
 interface AuthContextValue {

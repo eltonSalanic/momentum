@@ -44,6 +44,52 @@ serve(async (req) => {
 
     let customerId = profile.stripe_customer_id;
 
+    // Parse body for optional actions
+    let action = 'create-intent';
+    try {
+      const body = await req.json();
+      if (body && body.action) {
+        action = body.action;
+      }
+    } catch (_) {
+      // No body or simple request
+    }
+
+    if (action === 'get-payment-method') {
+      if (!customerId) {
+        return new Response(JSON.stringify({ card: null }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        });
+      }
+
+      const paymentMethods = await stripe.paymentMethods.list({
+        customer: customerId,
+        type: 'card',
+        limit: 1,
+      });
+
+      if (paymentMethods.data.length > 0) {
+        const card = paymentMethods.data[0].card;
+        return new Response(JSON.stringify({
+          card: {
+            brand: card.brand,
+            last4: card.last4,
+            exp_month: card.exp_month,
+            exp_year: card.exp_year,
+          }
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        });
+      } else {
+        return new Response(JSON.stringify({ card: null }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200,
+        });
+      }
+    }
+
     // 3. Create Stripe Customer if not exists
     if (!customerId) {
       const customer = await stripe.customers.create({
