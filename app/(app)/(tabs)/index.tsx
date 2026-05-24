@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surfaceVariant,
     borderRadius: theme.radius.xl,
     borderWidth: 1,
-    borderColor: theme.colors.outline,
+    borderColor: '#1B2A47',
     paddingVertical: 12,
     paddingHorizontal: 16,
   },
@@ -419,7 +419,7 @@ const styles = StyleSheet.create({
     color: theme.colors.primary,
   },
   expandedContent: {
-    paddingTop: theme.spacing.xs,
+    paddingTop: theme.spacing.sm,
     paddingLeft: theme.spacing.xs,
     gap: theme.spacing.xs,
   },

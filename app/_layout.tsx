@@ -5,7 +5,7 @@ import {
   useFonts,
 } from '@expo-google-fonts/space-grotesk';
 import { StripeProvider } from '@stripe/stripe-react-native';
-import { Stack } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
@@ -15,6 +15,8 @@ SplashScreen.preventAutoHideAsync();
 
 function RootNavigator() {
   const { session, isLoading } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
 
   // Keep splash screen up until session resolves
   useEffect(() => {
@@ -23,17 +25,31 @@ function RootNavigator() {
     }
   }, [isLoading]);
 
+  // Auth routing gating
+  useEffect(() => {
+    if (isLoading) return;
+
+    const inAuthGroup = segments[0] === '(auth)';
+
+    if (!session) {
+      if (!inAuthGroup) {
+        // Force redirect to login if no session and not in auth screens
+        router.replace('/(auth)/login');
+      }
+    } else {
+      if (inAuthGroup) {
+        // Redirect to app if has session but in auth screens
+        router.replace('/(app)');
+      }
+    }
+  }, [session, isLoading, segments]);
+
   if (isLoading) return null;
 
   return (
     <Stack screenOptions={{ headerShown: false, animation: 'slide_from_right' }}>
-      <Stack.Protected guard={!!session}>
-        <Stack.Screen name="(app)" />
-      </Stack.Protected>
-
-      <Stack.Protected guard={!session}>
-        <Stack.Screen name="(auth)" />
-      </Stack.Protected>
+      <Stack.Screen name="(app)" />
+      <Stack.Screen name="(auth)" />
     </Stack>
   );
 }
