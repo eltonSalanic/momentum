@@ -9,6 +9,7 @@ interface Profile {
   has_completed_onboarding: boolean;
   timezone: string | null;
   stripe_customer_id: string | null;
+  has_payment_method: boolean;
 }
 
 interface AuthContextValue {

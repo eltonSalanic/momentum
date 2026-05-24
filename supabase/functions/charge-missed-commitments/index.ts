@@ -201,6 +201,11 @@ serve(async (req) => {
           console.log(`User ${commitment.user_id} is in Free Trial. Skipping Stripe Payment.`);
         } else if (!stripeCustomerId) {
           console.error(`Missing stripe_customer_id for user ${commitment.user_id}. Charging failed.`);
+          // Set profiles.has_payment_method to false
+          await supabaseAdmin
+            .from('profiles')
+            .update({ has_payment_method: false })
+            .eq('id', commitment.user_id);
         } else {
           try {
             // 1. Retrieve the customer details from Stripe to find their default payment method
@@ -247,6 +252,11 @@ serve(async (req) => {
             }
           } catch (stripeErr: any) {
             console.error(`Stripe charging error for user ${commitment.user_id}:`, stripeErr.message);
+            // Set profiles.has_payment_method to false because card was declined, expired, or missing
+            await supabaseAdmin
+              .from('profiles')
+              .update({ has_payment_method: false })
+              .eq('id', commitment.user_id);
           }
         }
 

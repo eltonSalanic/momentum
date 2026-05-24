@@ -1,6 +1,6 @@
-import { useState } from 'react';
 import * as Haptics from 'expo-haptics';
 import { AlertCircle, Check, Circle, Clock, RotateCcw, Target } from 'lucide-react-native';
+import { useState } from 'react';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -9,11 +9,11 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { ThemedText } from '../ui/ThemedText';
-import { Button } from '../ui/Button';
 import { theme } from '../../constants/theme';
-import { COMMITMENT_TYPES, DEADLINE_TYPES } from '../../types/commitment';
 import type { TodayCommitment } from '../../hooks/useCommitments';
+import { COMMITMENT_TYPES, DEADLINE_TYPES } from '../../types/commitment';
+import { Button } from '../ui/Button';
+import { ThemedText } from '../ui/ThemedText';
 
 interface TodayCardProps {
   commitment: TodayCommitment;
@@ -93,11 +93,22 @@ export function TodayCard({ commitment, onCheckIn }: TodayCardProps) {
               <View style={styles.typeRow}>
                 <View style={styles.typeChip}>
                   {isRoutine ? (
-                    <RotateCcw size={10} color={isMissed ? theme.colors.error : theme.colors.primary} strokeWidth={2.5} />
+                    <RotateCcw
+                      size={10}
+                      color={isMissed ? theme.colors.error : theme.colors.primary}
+                      strokeWidth={2.5}
+                    />
                   ) : (
-                    <Target size={10} color={isMissed ? theme.colors.error : theme.colors.primary} strokeWidth={2.5} />
+                    <Target
+                      size={10}
+                      color={isMissed ? theme.colors.error : theme.colors.primary}
+                      strokeWidth={2.5}
+                    />
                   )}
-                  <ThemedText variant="labelSm" style={[styles.typeLabel, isMissed && styles.typeLabelMissed]}>
+                  <ThemedText
+                    variant="labelSm"
+                    style={[styles.typeLabel, isMissed && styles.typeLabelMissed]}
+                  >
                     {isRoutine ? 'ROUTINE' : 'TASK'}
                   </ThemedText>
                 </View>
@@ -119,16 +130,20 @@ export function TodayCard({ commitment, onCheckIn }: TodayCardProps) {
               </View>
             </View>
 
-            <ThemedText
-              variant="bodyMd"
-              style={[styles.title, checked && styles.titleChecked]}
-            >
+            <ThemedText variant="bodyMd" style={[styles.title, checked && styles.titleChecked]}>
               {commitment.title}
             </ThemedText>
 
             <View style={styles.deadlineRow}>
-              <Clock size={12} color={isMissed ? theme.colors.error : theme.colors.textMuted} strokeWidth={2} />
-              <ThemedText variant="labelSm" style={[styles.deadline, isMissed && styles.deadlineMissed]}>
+              <Clock
+                size={12}
+                color={isMissed ? theme.colors.error : theme.colors.textMuted}
+                strokeWidth={2}
+              />
+              <ThemedText
+                variant="labelSm"
+                style={[styles.deadline, isMissed && styles.deadlineMissed]}
+              >
                 {formatDeadline(commitment)}
               </ThemedText>
             </View>
@@ -157,7 +172,7 @@ export function TodayCard({ commitment, onCheckIn }: TodayCardProps) {
       >
         <View style={styles.modalOverlay}>
           <Pressable style={styles.modalDismissOverlay} onPress={() => setIsModalVisible(false)} />
-          
+
           <View style={styles.modalContent}>
             {/* Header Icon */}
             <View style={styles.modalIconContainer}>
@@ -170,7 +185,7 @@ export function TodayCard({ commitment, onCheckIn }: TodayCardProps) {
 
             {/* Title */}
             <ThemedText variant="headlineMd" style={styles.modalTitle}>
-              Verify Pledge
+              Verify Commitment
             </ThemedText>
 
             {/* Subtitle */}
@@ -185,7 +200,8 @@ export function TodayCard({ commitment, onCheckIn }: TodayCardProps) {
             </View>
 
             <ThemedText variant="labelSm" style={styles.modalDisclaimer}>
-              Momentum relies on your honesty. Your stakes are {formatAmount(commitment.amount_cents)}.
+              Momentum relies on your honesty. Your stakes are{' '}
+              {formatAmount(commitment.amount_cents)}.
             </ThemedText>
 
             {/* Action Buttons */}

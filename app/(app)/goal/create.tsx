@@ -1,6 +1,14 @@
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, ArrowRight, Calendar, CalendarRange, Check, Clock, DollarSign } from 'lucide-react-native';
+import {
+  ArrowLeft,
+  ArrowRight,
+  Calendar,
+  CalendarRange,
+  Check,
+  Clock,
+  DollarSign,
+} from 'lucide-react-native';
 import React, { useState } from 'react';
 import {
   Alert,
@@ -28,7 +36,6 @@ import {
   DeadlineType,
 } from '../../../types/commitment';
 
-
 const DAYS_FULL = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const DAYS_SHORT = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const DAY_LETTERS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
@@ -37,7 +44,7 @@ const STAKE_PRESETS = [5, 10, 20, 50];
 
 export default function CreateCommitmentScreen() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
 
   // Wizard state
   const [step, setStep] = useState(1);
@@ -46,7 +53,15 @@ export default function CreateCommitmentScreen() {
   // Form State
   const [title, setTitle] = useState('');
   const [type, setType] = useState<CommitmentType>(COMMITMENT_TYPES.ROUTINE);
-  const [checkInDays, setCheckInDays] = useState<boolean[]>([true, true, true, true, true, false, false]); // Mon-Fri default
+  const [checkInDays, setCheckInDays] = useState<boolean[]>([
+    true,
+    true,
+    true,
+    true,
+    true,
+    false,
+    false,
+  ]); // Mon-Fri default
   const [dueDate, setDueDate] = useState<Date | null>(null);
   const [amountCents, setAmountCents] = useState(500); // Default $5
   const [customStake, setCustomStake] = useState('');
@@ -58,8 +73,6 @@ export default function CreateCommitmentScreen() {
   const [calMonth, setCalMonth] = useState(new Date().getMonth());
   const [calYear, setCalYear] = useState(new Date().getFullYear());
 
-
-
   // Handle step transitions
   const nextStep = () => {
     if (step === 1 && !title.trim()) {
@@ -68,7 +81,10 @@ export default function CreateCommitmentScreen() {
     }
     if (step === 2 && type === COMMITMENT_TYPES.ROUTINE && !checkInDays.includes(true)) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert('Selection Required', 'Please select at least one check-in day for your Routine.');
+      Alert.alert(
+        'Selection Required',
+        'Please select at least one check-in day for your Routine.',
+      );
       return;
     }
     if (step === 2 && type === COMMITMENT_TYPES.TASK && !dueDate) {
@@ -80,9 +96,20 @@ export default function CreateCommitmentScreen() {
       const [hoursStr, minutesStr] = deadlineTime.split(':');
       const hours = parseInt(hoursStr, 10);
       const minutes = parseInt(minutesStr, 10);
-      if (isNaN(hours) || isNaN(minutes) || hours < 1 || hours > 12 || minutes < 0 || minutes > 59 || deadlineTime.length !== 5) {
+      if (
+        isNaN(hours) ||
+        isNaN(minutes) ||
+        hours < 1 ||
+        hours > 12 ||
+        minutes < 0 ||
+        minutes > 59 ||
+        deadlineTime.length !== 5
+      ) {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-        Alert.alert('Invalid Time', 'Please enter a valid time in 12-hour format (e.g., 01:00 to 12:59).');
+        Alert.alert(
+          'Invalid Time',
+          'Please enter a valid time in 12-hour format (e.g., 01:00 to 12:59).',
+        );
         return;
       }
     }
@@ -127,8 +154,18 @@ export default function CreateCommitmentScreen() {
 
   const calendarDays = getDaysInMonth(calMonth, calYear);
   const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
 
   const handlePrevMonth = () => {
@@ -170,11 +207,11 @@ export default function CreateCommitmentScreen() {
     if (formatted.length > 4) {
       formatted = formatted.substring(0, 4);
     }
-    
+
     if (formatted.length > 2) {
       formatted = `${formatted.substring(0, 2)}:${formatted.substring(2)}`;
     }
-    
+
     setDeadlineTime(formatted);
   };
 
@@ -185,9 +222,8 @@ export default function CreateCommitmentScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
 
     try {
-      const formattedDate = type === COMMITMENT_TYPES.TASK && dueDate 
-        ? dueDate.toISOString().split('T')[0] 
-        : null;
+      const formattedDate =
+        type === COMMITMENT_TYPES.TASK && dueDate ? dueDate.toISOString().split('T')[0] : null;
 
       let dbDeadlineTime = null;
       if (deadlineType === DEADLINE_TYPES.SPECIFIC_TIME) {
@@ -241,7 +277,9 @@ export default function CreateCommitmentScreen() {
       if (activeDays.length === 2 && checkInDays[5] && checkInDays[6]) return 'Weekends';
       return activeDays.join(', ');
     } else {
-      return dueDate ? dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'No date set';
+      return dueDate
+        ? dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        : 'No date set';
     }
   };
 
@@ -265,17 +303,30 @@ export default function CreateCommitmentScreen() {
 
             <View style={styles.typeContainer}>
               <TouchableOpacity
-                style={[styles.typeButton, type === COMMITMENT_TYPES.ROUTINE && styles.typeButtonActive]}
+                style={[
+                  styles.typeButton,
+                  type === COMMITMENT_TYPES.ROUTINE && styles.typeButtonActive,
+                ]}
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   setType(COMMITMENT_TYPES.ROUTINE);
                 }}
               >
-                <CalendarRange size={20} color={type === COMMITMENT_TYPES.ROUTINE ? theme.colors.onPrimary : theme.colors.secondary} />
-                <ThemedText 
-                  variant="labelMd" 
-                  style={{ 
-                    color: type === COMMITMENT_TYPES.ROUTINE ? theme.colors.onPrimary : theme.colors.text,
+                <CalendarRange
+                  size={20}
+                  color={
+                    type === COMMITMENT_TYPES.ROUTINE
+                      ? theme.colors.onPrimary
+                      : theme.colors.secondary
+                  }
+                />
+                <ThemedText
+                  variant="labelMd"
+                  style={{
+                    color:
+                      type === COMMITMENT_TYPES.ROUTINE
+                        ? theme.colors.onPrimary
+                        : theme.colors.text,
                     textAlign: 'center',
                     flexShrink: 1,
                   }}
@@ -285,17 +336,26 @@ export default function CreateCommitmentScreen() {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.typeButton, type === COMMITMENT_TYPES.TASK && styles.typeButtonActive]}
+                style={[
+                  styles.typeButton,
+                  type === COMMITMENT_TYPES.TASK && styles.typeButtonActive,
+                ]}
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   setType(COMMITMENT_TYPES.TASK);
                 }}
               >
-                <Calendar size={20} color={type === COMMITMENT_TYPES.TASK ? theme.colors.onPrimary : theme.colors.secondary} />
-                <ThemedText 
-                  variant="labelMd" 
-                  style={{ 
-                    color: type === COMMITMENT_TYPES.TASK ? theme.colors.onPrimary : theme.colors.text,
+                <Calendar
+                  size={20}
+                  color={
+                    type === COMMITMENT_TYPES.TASK ? theme.colors.onPrimary : theme.colors.secondary
+                  }
+                />
+                <ThemedText
+                  variant="labelMd"
+                  style={{
+                    color:
+                      type === COMMITMENT_TYPES.TASK ? theme.colors.onPrimary : theme.colors.text,
                     textAlign: 'center',
                     flexShrink: 1,
                   }}
@@ -307,7 +367,11 @@ export default function CreateCommitmentScreen() {
 
             <Input
               label="Commitment Title"
-              placeholder={type === COMMITMENT_TYPES.ROUTINE ? 'e.g. Hit the gym for 45 mins' : 'e.g. Wash and vacuum the car'}
+              placeholder={
+                type === COMMITMENT_TYPES.ROUTINE
+                  ? 'e.g. Hit the gym for 45 mins'
+                  : 'e.g. Wash and vacuum the car'
+              }
               value={title}
               onChangeText={setTitle}
               autoFocus
@@ -335,9 +399,13 @@ export default function CreateCommitmentScreen() {
                       onPress={() => toggleDay(i)}
                     >
                       <View style={[styles.checkbox, checkInDays[i] && styles.checkboxActive]}>
-                        {checkInDays[i] && <Check size={14} color={theme.colors.onPrimary} strokeWidth={3} />}
+                        {checkInDays[i] && (
+                          <Check size={14} color={theme.colors.onPrimary} strokeWidth={3} />
+                        )}
                       </View>
-                      <ThemedText style={[styles.dayRowText, checkInDays[i] && styles.dayRowTextActive]}>
+                      <ThemedText
+                        style={[styles.dayRowText, checkInDays[i] && styles.dayRowTextActive]}
+                      >
                         {day}
                       </ThemedText>
                     </TouchableOpacity>
@@ -415,7 +483,11 @@ export default function CreateCommitmentScreen() {
                 {dueDate && (
                   <View style={styles.selectedDateBadge}>
                     <Calendar size={16} color={theme.colors.primary} />
-                    <ThemedText variant="labelMd" color="primary" style={styles.selectedDateBadgeText}>
+                    <ThemedText
+                      variant="labelMd"
+                      color="primary"
+                      style={styles.selectedDateBadgeText}
+                    >
                       Deadline: {getScheduleSummary()}
                     </ThemedText>
                   </View>
@@ -449,8 +521,14 @@ export default function CreateCommitmentScreen() {
                       setCustomStake('');
                     }}
                   >
-                    <DollarSign size={20} color={isActive ? theme.colors.onPrimary : theme.colors.secondary} />
-                    <ThemedText variant="headlineMd" style={[styles.presetText, isActive && styles.presetTextActive]}>
+                    <DollarSign
+                      size={20}
+                      color={isActive ? theme.colors.onPrimary : theme.colors.secondary}
+                    />
+                    <ThemedText
+                      variant="headlineMd"
+                      style={[styles.presetText, isActive && styles.presetTextActive]}
+                    >
                       {preset}
                     </ThemedText>
                   </TouchableOpacity>
@@ -474,30 +552,66 @@ export default function CreateCommitmentScreen() {
               <ThemedText variant="labelMd" style={styles.sectionLabel}>
                 DEADLINE TIMING
               </ThemedText>
-              
+
               <View style={styles.deadlineToggles}>
                 <TouchableOpacity
-                  style={[styles.deadlineToggle, deadlineType === DEADLINE_TYPES.END_OF_DAY && styles.deadlineToggleActive]}
+                  style={[
+                    styles.deadlineToggle,
+                    deadlineType === DEADLINE_TYPES.END_OF_DAY && styles.deadlineToggleActive,
+                  ]}
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     setDeadlineType(DEADLINE_TYPES.END_OF_DAY);
                   }}
                 >
-                  <Clock size={16} color={deadlineType === DEADLINE_TYPES.END_OF_DAY ? theme.colors.onPrimary : theme.colors.secondary} />
-                  <ThemedText variant="labelSm" style={{ color: deadlineType === DEADLINE_TYPES.END_OF_DAY ? theme.colors.onPrimary : theme.colors.text }}>
+                  <Clock
+                    size={16}
+                    color={
+                      deadlineType === DEADLINE_TYPES.END_OF_DAY
+                        ? theme.colors.onPrimary
+                        : theme.colors.secondary
+                    }
+                  />
+                  <ThemedText
+                    variant="labelSm"
+                    style={{
+                      color:
+                        deadlineType === DEADLINE_TYPES.END_OF_DAY
+                          ? theme.colors.onPrimary
+                          : theme.colors.text,
+                    }}
+                  >
                     End of Day
                   </ThemedText>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.deadlineToggle, deadlineType === DEADLINE_TYPES.SPECIFIC_TIME && styles.deadlineToggleActive]}
+                  style={[
+                    styles.deadlineToggle,
+                    deadlineType === DEADLINE_TYPES.SPECIFIC_TIME && styles.deadlineToggleActive,
+                  ]}
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     setDeadlineType(DEADLINE_TYPES.SPECIFIC_TIME);
                   }}
                 >
-                  <Clock size={16} color={deadlineType === DEADLINE_TYPES.SPECIFIC_TIME ? theme.colors.onPrimary : theme.colors.secondary} />
-                  <ThemedText variant="labelSm" style={{ color: deadlineType === DEADLINE_TYPES.SPECIFIC_TIME ? theme.colors.onPrimary : theme.colors.text }}>
+                  <Clock
+                    size={16}
+                    color={
+                      deadlineType === DEADLINE_TYPES.SPECIFIC_TIME
+                        ? theme.colors.onPrimary
+                        : theme.colors.secondary
+                    }
+                  />
+                  <ThemedText
+                    variant="labelSm"
+                    style={{
+                      color:
+                        deadlineType === DEADLINE_TYPES.SPECIFIC_TIME
+                          ? theme.colors.onPrimary
+                          : theme.colors.text,
+                    }}
+                  >
                     Specific Time
                   </ThemedText>
                 </TouchableOpacity>
@@ -517,24 +631,36 @@ export default function CreateCommitmentScreen() {
                   />
                   <View style={styles.periodContainer}>
                     <TouchableOpacity
-                      style={[styles.periodButton, timePeriod === 'AM' && styles.periodButtonActive]}
+                      style={[
+                        styles.periodButton,
+                        timePeriod === 'AM' && styles.periodButtonActive,
+                      ]}
                       onPress={() => {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         setTimePeriod('AM');
                       }}
                     >
-                      <ThemedText variant="labelSm" style={[styles.periodText, timePeriod === 'AM' && styles.periodTextActive]}>
+                      <ThemedText
+                        variant="labelSm"
+                        style={[styles.periodText, timePeriod === 'AM' && styles.periodTextActive]}
+                      >
                         AM
                       </ThemedText>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={[styles.periodButton, timePeriod === 'PM' && styles.periodButtonActive]}
+                      style={[
+                        styles.periodButton,
+                        timePeriod === 'PM' && styles.periodButtonActive,
+                      ]}
                       onPress={() => {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         setTimePeriod('PM');
                       }}
                     >
-                      <ThemedText variant="labelSm" style={[styles.periodText, timePeriod === 'PM' && styles.periodTextActive]}>
+                      <ThemedText
+                        variant="labelSm"
+                        style={[styles.periodText, timePeriod === 'PM' && styles.periodTextActive]}
+                      >
                         PM
                       </ThemedText>
                     </TouchableOpacity>
@@ -549,7 +675,7 @@ export default function CreateCommitmentScreen() {
         return (
           <View style={styles.card}>
             <ThemedText variant="headlineMd" style={styles.stepTitle}>
-              Review your pledge.
+              Review your commitment.
             </ThemedText>
             <ThemedText variant="bodyMd" style={styles.stepSubtitle}>
               Make sure you can back this up. Integrity is the foundation of Momentum.
@@ -579,9 +705,7 @@ export default function CreateCommitmentScreen() {
 
               <View style={styles.summaryRow}>
                 <ThemedText style={styles.summaryLabel}>DEADLINE TIME</ThemedText>
-                <ThemedText style={styles.summaryValueText}>
-                  {getDeadlineSummary()}
-                </ThemedText>
+                <ThemedText style={styles.summaryValueText}>{getDeadlineSummary()}</ThemedText>
               </View>
 
               <View style={styles.summaryRow}>
@@ -594,7 +718,8 @@ export default function CreateCommitmentScreen() {
 
             <View style={styles.alertBox}>
               <ThemedText variant="labelSm" style={styles.alertText}>
-                ⚠️ BY ACTIVATING: Failing to check-in before this deadline will result in an automatic charge of ${(amountCents / 100).toFixed(2)}. No exceptions, no excuses.
+                ⚠️ BY ACTIVATING: Failing to check-in before this deadline will result in an
+                automatic charge of ${(amountCents / 100).toFixed(2)}. No exceptions, no excuses.
               </ThemedText>
             </View>
           </View>
@@ -605,14 +730,49 @@ export default function CreateCommitmentScreen() {
     }
   };
 
+  if (!profile?.has_payment_method) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.lockContainer}>
+          <View style={styles.lockIconCircle}>
+            <DollarSign size={48} color={theme.colors.primary} strokeWidth={2.5} />
+          </View>
+          <ThemedText variant="display" style={styles.lockTitle}>
+            Stakes Required
+          </ThemedText>
+          <ThemedText variant="bodyLg" style={styles.lockSubtitle}>
+            Momentum helps you stay consistent by attaching real financial consequences to your
+            commitments.
+          </ThemedText>
+          <ThemedText variant="bodyMd" style={styles.lockHint}>
+            Please register a payment method first to set up your stake and start building momentum.
+          </ThemedText>
+          <View style={styles.lockFooter}>
+            <Button
+              label="Add Payment Method"
+              onPress={() => {
+                router.back();
+                router.push('/(app)/(tabs)/settings');
+              }}
+              variant="primary"
+            />
+            <Button label="Back" onPress={() => router.back()} variant="ghost" />
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-          
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
           {/* Header Bar with Step Title & Exit button */}
           <View style={styles.header}>
             <View style={{ flex: 1 }}>
@@ -633,20 +793,12 @@ export default function CreateCommitmentScreen() {
           {/* Sleek Animated Progress Bar */}
           <View style={styles.progressBarWrapper}>
             <View style={styles.progressBarBg}>
-              <Animated.View 
-                style={[
-                  styles.progressBarFill, 
-                  { width: `${step * 25}%` }
-                ]} 
-              />
+              <Animated.View style={[styles.progressBarFill, { width: `${step * 25}%` }]} />
             </View>
           </View>
 
           {/* Sliding step layout box */}
-          <View style={styles.wizardContainer}>
-            {renderStepContent()}
-          </View>
-
+          <View style={styles.wizardContainer}>{renderStepContent()}</View>
         </ScrollView>
 
         {/* Dynamic Sticky Bottom Navigation Footer */}
@@ -669,7 +821,7 @@ export default function CreateCommitmentScreen() {
             />
           ) : (
             <Button
-              label={isSubmitting ? 'Activating Pledges...' : 'Activate Commitment'}
+              label={isSubmitting ? 'Activating Commitments...' : 'Activate Commitment'}
               onPress={handleCreate}
               isLoading={isSubmitting}
               style={styles.actionBtn}
@@ -685,6 +837,46 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+  },
+  lockContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.xl * 1.5,
+    gap: theme.spacing.lg,
+  },
+  lockIconCircle: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    backgroundColor: 'rgba(185, 199, 228, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(185, 199, 228, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: theme.spacing.md,
+  },
+  lockTitle: {
+    fontSize: 32,
+    lineHeight: 40,
+    textAlign: 'center',
+  },
+  lockSubtitle: {
+    color: theme.colors.textMuted,
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+  lockHint: {
+    color: theme.colors.secondary,
+    textAlign: 'center',
+    lineHeight: 20,
+    fontStyle: 'italic',
+    paddingHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.lg,
+  },
+  lockFooter: {
+    width: '100%',
+    gap: theme.spacing.md,
   },
   scrollContent: {
     flexGrow: 1,

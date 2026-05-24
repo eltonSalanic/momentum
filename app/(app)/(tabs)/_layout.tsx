@@ -1,8 +1,9 @@
 import { Tabs, useRouter } from 'expo-router';
-import { Home, Settings, Plus } from 'lucide-react-native';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Home, Plus, Settings } from 'lucide-react-native';
+import { Alert, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '../../../constants/theme';
+import { useAuth } from '../../../context/AuthContext';
 
 const TAB_BAR_HEIGHT = 64;
 
@@ -21,6 +22,7 @@ function CreateButton({ onPress }: { onPress: () => void }) {
 export default function TabsLayout() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { profile } = useAuth();
 
   return (
     <Tabs
@@ -53,9 +55,7 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color, size }) => (
-            <Home size={size} color={color} strokeWidth={1.75} />
-          ),
+          tabBarIcon: ({ color, size }) => <Home size={size} color={color} strokeWidth={1.75} />,
         }}
       />
 
@@ -68,7 +68,25 @@ export default function TabsLayout() {
           tabBarLabel: () => null,
           tabBarButton: () => (
             <View style={styles.fabWrapper}>
-              <CreateButton onPress={() => router.push('/(app)/goal/create')} />
+              <CreateButton
+                onPress={() => {
+                  if (!profile?.has_payment_method) {
+                    Alert.alert(
+                      'Stakes Card Required',
+                      'Momentum attaches real consequences to commitments. Please register a payment method before setting a commitment.',
+                      [
+                        { text: 'Maybe Later', style: 'cancel' },
+                        {
+                          text: 'Add Card Now',
+                          onPress: () => router.push('/(app)/(tabs)/settings'),
+                        },
+                      ],
+                    );
+                  } else {
+                    router.push('/(app)/goal/create');
+                  }
+                }}
+              />
             </View>
           ),
         }}

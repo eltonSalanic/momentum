@@ -108,7 +108,10 @@ serve(async (req) => {
     // 4. Create SetupIntent
     const setupIntent = await stripe.setupIntents.create({
       customer: customerId,
-      payment_method_types: ['card'],
+      automatic_payment_methods: {
+        enabled: true,
+        allow_redirects: 'never',
+      },
       metadata: {
         supabase_user_id: user.id,
       },
