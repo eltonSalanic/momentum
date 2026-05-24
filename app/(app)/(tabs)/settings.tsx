@@ -201,13 +201,14 @@ export default function SettingsScreen() {
         setupIntentClientSecret: funcData.clientSecret,
         merchantDisplayName: process.env.EXPO_PUBLIC_APP_NAME ?? 'Momentum',
         returnURL: 'momentum://stripe-redirect',
+        style: 'alwaysDark',
         appearance: {
           colors: {
             primary: theme.colors.primary,
             background: theme.colors.background,
             componentBackground: theme.colors.surface,
             componentDivider: '#1E2A2A',
-            primaryText: theme.colors.text,
+            primaryText: '#FFFFFF',
             secondaryText: theme.colors.textMuted,
             placeholderText: theme.colors.secondary,
             icon: theme.colors.primary,
