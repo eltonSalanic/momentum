@@ -23,7 +23,7 @@ Must Haves
   - [x] Choose deadline timing: End of Day (11:59 PM) or Specific Time (Custom Time picker)
 - [x] If user doesn’t check-in by the deadline, they get charged
 - [x] Free 14 day trial
-- [ ] Pausing goal
+- [x] Pausing goal
 - [ ] Edit profile
   - [ ] Change name
   - [ ] Change timezone
@@ -55,43 +55,43 @@ Expo Router file-based routing with route groups for auth gating.
 ### Navigation Flow
 
 1. App loads → check Supabase session
-2. No session → show (auth) group
-3. Has session → fetch profile
-4. Profile.first_name is null → show (onboarding) group
-5. Profile is complete → show (tabs) group
+2. No session → show `(auth)` group
+3. Has session → check profile's onboarding completion status
+4. `profile.has_completed_onboarding` is false → show `(app)/(onboarding)` group
+5. Onboarding is complete → show `(app)/(tabs)` group
 
 ### File Structure
 
 ```
 app/
 ├── _layout.tsx                    # Root layout: loads fonts, auth provider, splash
-├── index.tsx                      # Entry redirect (→ auth or tabs based on session)
+├── index.tsx                      # Entry redirect (→ (auth) or (app) based on session)
 │
 ├── (auth)/                        # Unauthenticated screens
 │   ├── _layout.tsx                # Stack layout, no header
 │   ├── login.tsx                  # Email + password login
 │   └── signup.tsx                 # Email + password sign up
 │
-├── (onboarding)/                  # Post-signup, pre-app setup
-│   ├── _layout.tsx                # Stack layout, no back button
-│   ├── name.tsx                   # First name + Last name
-│   ├── timezone.tsx               # Timezone picker
-│   └── payment.tsx                # Add credit card (Stripe)
-│
-├── (tabs)/                        # Main app (authenticated + onboarded)
-│   ├── _layout.tsx                # Bottom tab navigator
-│   ├── index.tsx                  # HOME — Today's check-ins
-│   ├── commitments.tsx            # COMMITMENTS — All commitments list
-│   └── settings.tsx               # SETTINGS — Profile & account
-│
-├── commitment/                    # Commitment-related screens
-│   ├── create.tsx                 # Create a new commitment (Routine/Task flow)
-│   └── [id].tsx                   # Commitment detail (edit, pause, view history)
-│
-├── profile/
-│   └── edit.tsx                   # Edit name, timezone, payment method
-│
-└── charges.tsx                    # Charges/penalty history (read-only)
+└── (app)/                         # Authenticated screens
+    ├── _layout.tsx                # App layout (routes to tabs, onboarding, or goal modal screens)
+    ├── index.tsx                  # Redirect to tabs/home
+    │
+    ├── (onboarding)/              # Sequential setup flow (uses OnboardingProvider)
+    │   ├── _layout.tsx            # Onboarding stack layout
+    │   ├── index.tsx              # Step 1: Collect first & last name ✅
+    │   ├── timezone.tsx           # Step 2: Set timezone ✅
+    │   ├── goal.tsx               # Step 3: Set up first commitment ✅
+    │   └── payment.tsx            # Step 4: Add credit card (Stripe) ✅
+    │
+    ├── (tabs)/                    # Main tabbed app
+    │   ├── _layout.tsx            # Bottom tab navigator with custom floating action button
+    │   ├── index.tsx              # HOME — Today's check-ins & All commitments list ✅
+    │   ├── create.tsx             # Spacer tab (FAB interceptor)
+    │   └── settings.tsx           # PROFILE/SETTINGS — User profile info & sign out ✅
+    │
+    └── goal/                      # Commitment-specific screens (modals)
+        ├── create.tsx             # Create Commitment carousel (Routine/Task flow) ✅
+        └── [id].tsx               # Edit Commitment (edit form, status pause/resume) ✅
 ```
 
 Always use the Expo docs MCP to use Expo SDK v54 best practices. If you don't have access to it, let me know before coding.
@@ -103,24 +103,22 @@ Always use the Expo docs MCP to use Expo SDK v54 best practices. If you don't ha
 - **login** — Email/password sign in via Supabase Auth ✅
 - **signup** — Create account → triggers profile auto-creation ✅
 
-#### (onboarding) — First-Time Setup (sequential, non-skippable)
+#### (app)/(onboarding) — First-Time Setup (sequential, non-skippable)
 
-- **name** — Collect first & last name → UPDATE profiles ✅
-- **timezone** — Set timezone → UPDATE profile ✅
-- **payment** — Add credit card via Stripe → save stripe_customer_id ✅
+- **index** — Collect first & last name → UPDATE profile onboarding state ✅
+- **timezone** — Set timezone → UPDATE profile onboarding state ✅
+- **goal** — Choose first commitment (title, schedule, stakes) → UPDATE onboarding state ✅
+- **payment** — Add credit card via Stripe → Save Stripe customer & complete onboarding ✅
 
+#### (app)/(tabs) — Main App
 
-#### (tabs) — Main App
-
-- **Home** — Today's active commitments (Routines and Tasks) that need check-in. Tap to mark complete. Along with a list of all current commitments. ✅
-- **Settings** — Profile info, payment method, charges history link, sign out.
+- **index (Home)** — Today's active commitments (Routines and Tasks) that need check-in (Tap to check-in with haptic feedback, automatic refreshing) and All Commitments grouped/expandable by day of the week. ✅
+- **settings (Profile)** — User profile info and sign out button. ✅
 
 #### Standalone Screens
 
-- **goal/create** — Set up a Commitment: Routine vs Task selection, schedule (days or single date), penalty amount ($), and deadline timing (End of Day vs Specific Time) ✅
-- **goal/[id]** — View commitment details, check-in history, edit, pause/resume, cancel
-- **profile/edit** — Change name, timezone, payment method
-- **charges** — Read-only list of past penalties with status
+- **goal/create** — Set up a new Commitment: carousel flow with Routine vs Task selection, schedule (days or single due date), custom/preset stakes penalty ($), and deadline timing (End of Day vs Specific Time). ✅
+- **goal/[id]** — Edit commitment details (title, schedule, stakes, deadline) and toggle pause/resume commitment. ✅
 
 ### Providers
 
