@@ -2,21 +2,6 @@ import { useStripe } from '@stripe/stripe-react-native';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import {
-  Alert,
-  FlatList,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useState } from 'react';
-import {
   Check,
   ChevronRight,
   CreditCard,
@@ -26,6 +11,20 @@ import {
   User,
   X,
 } from 'lucide-react-native';
+import React, { useState } from 'react';
+import {
+  Alert,
+  FlatList,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
@@ -108,9 +107,38 @@ export default function SettingsScreen() {
   const [selectedTimezone, setSelectedTimezone] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Card details state
+  const [cardDetails, setCardDetails] = useState<{ brand: string; last4: string } | null>(null);
+  const [isLoadingCard, setIsLoadingCard] = useState(false);
+
   // Status indicators
   const [isSaving, setIsSaving] = useState(false);
   const [isStripeLoading, setIsStripeLoading] = useState(false);
+
+  // Fetch card details on mount/change
+  const fetchCardDetails = async () => {
+    if (!profile?.stripe_customer_id) return;
+    setIsLoadingCard(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('stripe-setup-intent', {
+        body: { action: 'get-payment-method' },
+      });
+      if (error) throw error;
+      if (data && data.card) {
+        setCardDetails({ brand: data.card.brand, last4: data.card.last4 });
+      } else {
+        setCardDetails(null);
+      }
+    } catch (err) {
+      console.error('Error fetching card details:', err);
+    } finally {
+      setIsLoadingCard(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchCardDetails();
+  }, [profile?.stripe_customer_id]);
 
   // Init local state when modal opens
   const openEditProfile = () => {
@@ -163,9 +191,8 @@ export default function SettingsScreen() {
 
     try {
       // 1. Invoke stripe edge function to get setupintent secret
-      const { data: funcData, error: funcError } = await supabase.functions.invoke(
-        'stripe-setup-intent'
-      );
+      const { data: funcData, error: funcError } =
+        await supabase.functions.invoke('stripe-setup-intent');
 
       if (funcError) throw funcError;
 
@@ -228,7 +255,7 @@ export default function SettingsScreen() {
   // Filtered timezone search list
   const allTzs = Array.from(new Set([selectedTimezone || 'UTC', ...COMMON_TIMEZONES])).sort();
   const filteredTimezones = allTzs.filter((tz) =>
-    tz.toLowerCase().includes(searchQuery.toLowerCase())
+    tz.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -261,7 +288,7 @@ export default function SettingsScreen() {
             <View style={styles.timezonePill}>
               <Globe size={13} color={theme.colors.primary} />
               <ThemedText variant="labelSm" color="primary" style={styles.timezonePillText}>
-                {profile?.timezone || 'UTC'}
+                {(profile?.timezone || 'UTC').replace(/_/g, ' ')}
               </ThemedText>
             </View>
           </View>
@@ -304,7 +331,7 @@ export default function SettingsScreen() {
                     TIMEZONE
                   </ThemedText>
                   <ThemedText variant="bodyMd" style={styles.itemValue}>
-                    {profile?.timezone || 'UTC'}
+                    {(profile?.timezone || 'UTC').replace(/_/g, ' ')}
                   </ThemedText>
                 </View>
               </View>
@@ -316,20 +343,39 @@ export default function SettingsScreen() {
           <View style={styles.card}>
             <View style={styles.cardHeader}>
               <ThemedText variant="labelSm" color="textMuted" style={styles.cardLabel}>
-                SECURITY CONSEQUENCE CONGRUENCE
+                Stakes Payment Method
               </ThemedText>
             </View>
 
             <View style={styles.stripeGlassCard}>
               <View style={styles.glassHeader}>
-                <CreditCard size={28} color="#D1D5DB" />
+                <CreditCard size={22} color="#D1D5DB" />
                 <ThemedText variant="labelSm" style={styles.securedLogo}>
-                  MOMENTUM CONGRUENCE
+                  {cardDetails
+                    ? `${cardDetails.brand.toUpperCase()} SECURED`
+                    : 'MOMENTUM CONGRUENCE'}
                 </ThemedText>
               </View>
-              <ThemedText variant="headlineMd" style={styles.glassCardNumber}>
-                ••••  ••••  ••••  {profile?.stripe_customer_id ? 'ACTIVE' : 'NONE'}
-              </ThemedText>
+
+              <View style={styles.cardNumberContainer}>
+                <ThemedText variant="headlineMd" style={styles.glassCardNumber}>
+                  {isLoadingCard
+                    ? 'LOADING CARD...'
+                    : cardDetails
+                      ? `••••  ••••  ••••  ${cardDetails.last4}`
+                      : profile?.stripe_customer_id
+                        ? '••••  ••••  ••••  ACTIVE'
+                        : '••••  ••••  ••••  NONE'}
+                </ThemedText>
+                <ThemedText variant="labelSm" color="textMuted" style={styles.cardEndingText}>
+                  {cardDetails
+                    ? `Card ending in ${cardDetails.last4}`
+                    : profile?.stripe_customer_id
+                      ? 'Active card details loaded securely'
+                      : 'No active card linked'}
+                </ThemedText>
+              </View>
+
               <View style={styles.glassFooter}>
                 <View>
                   <ThemedText variant="labelSm" color="textMuted" style={styles.glassFooterLabel}>
@@ -342,17 +388,20 @@ export default function SettingsScreen() {
                 <View style={styles.activeIndicatorBadge}>
                   <View style={styles.indicatorDot} />
                   <ThemedText variant="labelSm" style={styles.indicatorLabel}>
-                    SECURED
+                    {cardDetails ? 'VERIFIED' : 'SECURED'}
                   </ThemedText>
                 </View>
               </View>
             </View>
 
             <Button
-              label={isStripeLoading ? 'Initializing Stripe...' : 'Update Credit Card Method'}
+              label={isStripeLoading ? 'Initializing Stripe...' : 'Change Payment Method'}
               variant="ghost"
               isLoading={isStripeLoading}
-              onPress={handleUpdatePayment}
+              onPress={async () => {
+                await handleUpdatePayment();
+                await fetchCardDetails();
+              }}
               style={styles.stripeBtn}
             />
           </View>
@@ -660,8 +709,8 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.lg,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
-    padding: theme.spacing.xl,
-    gap: 20,
+    padding: theme.spacing.md,
+    gap: 12,
     overflow: 'hidden',
   },
   glassHeader: {
@@ -680,7 +729,16 @@ const styles = StyleSheet.create({
     fontFamily: 'SpaceGrotesk_600SemiBold',
     fontSize: 20,
     letterSpacing: 2,
-    marginVertical: 4,
+    marginBottom: 2,
+  },
+  cardNumberContainer: {
+    gap: 1,
+  },
+  cardEndingText: {
+    fontSize: 11,
+    color: '#9CA3AF',
+    fontFamily: 'Inter_400Regular',
+    marginTop: -1,
   },
   glassFooter: {
     flexDirection: 'row',
@@ -814,6 +872,7 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.outline,
     borderRadius: theme.radius.md,
     overflow: 'hidden',
+    marginBottom: theme.spacing.md,
   },
   tzListContent: {
     paddingVertical: theme.spacing.xs,
