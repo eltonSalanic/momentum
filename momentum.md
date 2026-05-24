@@ -24,10 +24,10 @@ Must Haves
 - [x] If user doesn’t check-in by the deadline, they get charged
 - [x] Free 14 day trial
 - [x] Pausing goal
-- [ ] Edit profile
-  - [ ] Change name
-  - [ ] Change timezone
-  - [ ] Change payment method
+- [x] Edit profile
+  - [x] Change name
+  - [x] Change timezone
+  - [x] Change payment method
 - [ ] Web App For Cancelling (In case users lose access to phone)
   - [ ] Logging in
   - [ ] Pause goal
