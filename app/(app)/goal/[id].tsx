@@ -69,8 +69,9 @@ export default function EditCommitmentScreen() {
     if (!id) return;
     try {
       setIsLoadingGoal(true);
+      // Query the commitments view — returns unified shape for both routines and tasks
       const { data, error } = await supabase
-        .from('goals')
+        .from('commitments')
         .select('*')
         .eq('id', id)
         .single();
@@ -232,10 +233,6 @@ export default function EditCommitmentScreen() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
 
     try {
-      const formattedDate = type === COMMITMENT_TYPES.TASK && dueDate 
-        ? dueDate.toISOString().split('T')[0] 
-        : null;
-
       let dbDeadlineTime = null;
       if (deadlineType === DEADLINE_TYPES.SPECIFIC_TIME) {
         const [hoursStr, minutesStr] = deadlineTime.split(':');
@@ -255,19 +252,34 @@ export default function EditCommitmentScreen() {
         }
       }
 
-      const { error } = await supabase
-        .from('goals')
-        .update({
-          title: title.trim(),
-          amount_cents: amountCents,
-          check_in_days: type === COMMITMENT_TYPES.ROUTINE ? checkInDays : null,
-          type,
-          due_date: formattedDate,
-          deadline_type: deadlineType,
-          deadline_time: dbDeadlineTime,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id);
+      let error;
+
+      if (type === COMMITMENT_TYPES.ROUTINE) {
+        ({ error } = await supabase
+          .from('routines')
+          .update({
+            title: title.trim(),
+            amount_cents: amountCents,
+            check_in_days: checkInDays,
+            deadline_type: deadlineType,
+            deadline_time: dbDeadlineTime,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', id));
+      } else {
+        const formattedDate = dueDate ? dueDate.toISOString().split('T')[0] : null;
+        ({ error } = await supabase
+          .from('tasks')
+          .update({
+            title: title.trim(),
+            amount_cents: amountCents,
+            due_date: formattedDate,
+            deadline_type: deadlineType,
+            deadline_time: dbDeadlineTime,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', id));
+      }
 
       if (error) throw error;
 
@@ -291,8 +303,10 @@ export default function EditCommitmentScreen() {
       const nextStatus = isPaused ? 'active' : 'paused';
       const pausedAt = isPaused ? null : new Date().toISOString();
 
+      // Branch on type to update the correct table
+      const table = type === COMMITMENT_TYPES.ROUTINE ? 'routines' : 'tasks';
       const { error } = await supabase
-        .from('goals')
+        .from(table)
         .update({
           status: nextStatus,
           paused_at: pausedAt,

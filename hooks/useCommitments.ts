@@ -58,23 +58,23 @@ export function useCommitments() {
 
     const { dateStr, dayIndex } = getLocalToday();
 
-    // Fetch all commitments for this user (both active and paused)
-    const { data: goals, error: goalsError } = await supabase
-      .from('goals')
+    // Fetch all commitments from the unified view (routines + tasks)
+    const { data: allData, error: allError } = await supabase
+      .from('commitments')
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
-    if (goalsError) {
-      console.error('Error fetching commitments:', goalsError);
+    if (allError) {
+      console.error('Error fetching commitments:', allError);
       setIsLoading(false);
       return;
     }
 
-    const allCommitments = (goals ?? []) as Commitment[];
+    const allCommitments = (allData ?? []) as Commitment[];
     setCommitments(allCommitments);
 
-    // Fetch today's check-ins
+    // Fetch today's check-ins for routines (tasks use checked_in boolean directly)
     const { data: checkIns, error: checkInsError } = await supabase
       .from('check_ins')
       .select('*')
@@ -86,13 +86,14 @@ export function useCommitments() {
     }
 
     const todayCheckIns = (checkIns ?? []) as CheckIn[];
+    // Maps routine_id → check_in row id (for routines only)
     const checkInMap = new Map(todayCheckIns.map((ci) => [ci.goal_id, ci.id]));
 
     const now = new Date();
     const currentHour = now.getHours();
     const currentMin = now.getMinutes();
 
-    // Filter commitments that are active and due today, or tasks that were due in the past and are still active
+    // Filter commitments that are active and due today
     const dueToday: TodayCommitment[] = allCommitments
       .filter((c) => {
         if (c.status === 'paused') {
@@ -102,21 +103,33 @@ export function useCommitments() {
           return c.check_in_days != null && c.check_in_days[dayIndex] === true;
         }
         if (c.type === COMMITMENT_TYPES.TASK) {
+          // Show tasks due today or overdue (already checked-in tasks still show as completed)
           return c.due_date != null && c.due_date <= dateStr;
         }
         return false;
       })
       .map((c) => {
-        const isCheckedIn = checkInMap.has(c.id);
-        const checkInId = checkInMap.get(c.id) ?? null;
+        // Determine isCheckedIn:
+        // - Routines: look up check_in row in today's check_ins
+        // - Tasks: read checked_in boolean directly from the row
+        const isCheckedIn =
+          c.type === COMMITMENT_TYPES.ROUTINE
+            ? checkInMap.has(c.id)
+            : c.checked_in === true;
+
+        const checkInId =
+          c.type === COMMITMENT_TYPES.ROUTINE
+            ? (checkInMap.get(c.id) ?? null)
+            : null; // Tasks don't use check_ins rows
+
         let isMissed = false;
 
         if (!isCheckedIn) {
           if (c.type === COMMITMENT_TYPES.TASK && c.due_date != null && c.due_date < dateStr) {
-            // Task has a past due date and hasn't been checked in today
+            // Task has a past due date and hasn't been checked in
             isMissed = true;
           } else if (c.deadline_type === 'specific_time' && c.deadline_time) {
-            // Due today, but specific deadline time has passed
+            // Due today but specific deadline time has passed
             const [deadHour, deadMin] = c.deadline_time.split(':').map(Number);
             if (currentHour > deadHour || (currentHour === deadHour && currentMin >= deadMin)) {
               isMissed = true;
@@ -148,11 +161,16 @@ export function useCommitments() {
 
   /**
    * Check-in to a commitment for today.
+   * - Routines: inserts a row into `check_ins`
+   * - Tasks: updates `tasks.checked_in = true`
    * Optimistically updates local state, then writes to Supabase.
    */
   const checkIn = useCallback(
     async (goalId: string): Promise<boolean> => {
       if (!user) return false;
+
+      const commitment = [...commitments, ...todayCommitments].find((c) => c.id === goalId);
+      if (!commitment) return false;
 
       const { dateStr } = getLocalToday();
 
@@ -163,37 +181,65 @@ export function useCommitments() {
         )
       );
 
-      const { data, error } = await supabase
-        .from('check_ins')
-        .insert({
-          goal_id: goalId,
-          user_id: user.id,
-          check_in_date: dateStr,
-        })
-        .select('id')
-        .single();
+      if (commitment.type === COMMITMENT_TYPES.ROUTINE) {
+        // Routines: insert a check_in row
+        const { data, error } = await supabase
+          .from('check_ins')
+          .insert({
+            goal_id: goalId,
+            user_id: user.id,
+            check_in_date: dateStr,
+          })
+          .select('id')
+          .single();
 
-      if (error) {
-        console.error('Check-in error:', error);
-        // Rollback optimistic update
+        if (error) {
+          console.error('Check-in error (routine):', error);
+          setTodayCommitments((prev) =>
+            prev.map((c) =>
+              c.id === goalId ? { ...c, isCheckedIn: false, checkInId: null } : c
+            )
+          );
+          return false;
+        }
+
+        // Update with real check_in ID
         setTodayCommitments((prev) =>
           prev.map((c) =>
-            c.id === goalId ? { ...c, isCheckedIn: false, checkInId: null } : c
+            c.id === goalId ? { ...c, checkInId: data.id } : c
           )
         );
-        return false;
+        return true;
+      } else {
+        // Tasks: update checked_in boolean directly
+        const { error } = await supabase
+          .from('tasks')
+          .update({ checked_in: true })
+          .eq('id', goalId)
+          .eq('user_id', user.id);
+
+        if (error) {
+          console.error('Check-in error (task):', error);
+          setTodayCommitments((prev) =>
+            prev.map((c) =>
+              c.id === goalId ? { ...c, isCheckedIn: false, checkInId: null } : c
+            )
+          );
+          return false;
+        }
+
+        // Also sync in commitments list
+        setCommitments((prev) =>
+          prev.map((c) =>
+            c.id === goalId && c.type === COMMITMENT_TYPES.TASK
+              ? { ...c, checked_in: true }
+              : c
+          )
+        );
+        return true;
       }
-
-      // Update with real ID
-      setTodayCommitments((prev) =>
-        prev.map((c) =>
-          c.id === goalId ? { ...c, checkInId: data.id } : c
-        )
-      );
-
-      return true;
     },
-    [user]
+    [user, commitments, todayCommitments]
   );
 
   return {

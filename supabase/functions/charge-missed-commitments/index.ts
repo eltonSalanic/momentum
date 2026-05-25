@@ -49,16 +49,28 @@ serve(async (req) => {
 
     // 2. Fetch all active commitments along with user profiles
     const { data: commitments, error: queryError } = await supabaseAdmin
-      .from('goals')
+      .from('commitments')
       .select(`
-        *,
-        profiles:user_id (
-          timezone,
-          stripe_customer_id,
-          trial_ends_at
-        )
+        id,
+        user_id,
+        title,
+        type,
+        amount_cents,
+        check_in_days,
+        due_date,
+        checked_in,
+        deadline_type,
+        deadline_time,
+        status
       `)
       .eq('status', 'active');
+
+    // Fetch all profiles separately (view can't do join)
+    const { data: profiles } = await supabaseAdmin
+      .from('profiles')
+      .select('id, timezone, stripe_customer_id, trial_ends_at');
+
+    const profileMap = new Map((profiles ?? []).map((p: any) => [p.id, p]));
 
     if (queryError) throw queryError;
     if (!commitments || commitments.length === 0) {
@@ -73,7 +85,7 @@ serve(async (req) => {
 
     // Loop through each active commitment to see if the deadline has passed
     for (const commitment of commitments) {
-      const profile = commitment.profiles;
+      const profile = profileMap.get(commitment.user_id);
       if (!profile) continue;
 
       const timezone = profile.timezone ?? 'UTC';
@@ -161,16 +173,26 @@ serve(async (req) => {
         if (!wasActiveDay) continue;
 
         // B. Check if the user successfully checked in on this date
-        const { data: checkIn, error: checkInError } = await supabaseAdmin
-          .from('check_ins')
-          .select('id')
-          .eq('goal_id', commitment.id)
-          .eq('check_in_date', audit.dateStr)
-          .maybeSingle();
+        let checkedIn = false;
 
-        if (checkInError) {
-          console.error(`Check-in fetch error for goal ${commitment.id}:`, checkInError);
-          continue;
+        if (commitment.type === 'routine') {
+          // Routines: look for a check_in row for this date
+          const { data: checkIn, error: checkInError } = await supabaseAdmin
+            .from('check_ins')
+            .select('id')
+            .eq('goal_id', commitment.id)
+            .eq('check_in_date', audit.dateStr)
+            .maybeSingle();
+
+          if (checkInError) {
+            console.error(`Check-in fetch error for routine ${commitment.id}:`, checkInError);
+            continue;
+          }
+          checkedIn = !!checkIn;
+        } else if (commitment.type === 'task') {
+          // Tasks: check the checked_in boolean directly
+          // A task is only charged if it missed its due_date and was never checked in
+          checkedIn = commitment.checked_in === true;
         }
 
         // C. Check if we have already processed a charge for this date (prevent double-billing!)
@@ -187,7 +209,7 @@ serve(async (req) => {
         }
 
         // If they checked in, or we have already generated a charge record for this date, skip auditing
-        if (checkIn || chargeRecord) continue;
+        if (checkedIn || chargeRecord) continue;
 
         // --- THEY MISSED THE DEADLINE! COMMENCE CHARGING ---
         console.log(`Miss detected! User ${commitment.user_id} missed deadline on ${audit.dateStr} for "${commitment.title}"`);

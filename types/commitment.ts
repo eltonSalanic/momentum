@@ -22,15 +22,16 @@ export interface CommitmentFormState {
   deadlineTime: string;
 }
 
-/** Database row shape from the `goals` table */
-export interface Commitment {
+/** Database row shape from the `routines` table */
+export interface Routine {
   id: string;
   user_id: string;
   title: string;
-  type: CommitmentType;
+  type: 'routine';
   amount_cents: number;
-  check_in_days: boolean[] | null;
-  due_date: string | null;
+  check_in_days: boolean[];
+  due_date: null;
+  checked_in: null;
   deadline_type: DeadlineType;
   deadline_time: string | null;
   status: string;
@@ -38,3 +39,27 @@ export interface Commitment {
   created_at: string;
   updated_at: string;
 }
+
+/** Database row shape from the `tasks` table */
+export interface Task {
+  id: string;
+  user_id: string;
+  title: string;
+  type: 'task';
+  amount_cents: number;
+  check_in_days: null;
+  due_date: string;
+  checked_in: boolean;
+  deadline_type: DeadlineType;
+  deadline_time: string | null;
+  status: string;
+  paused_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Discriminated union of Routine | Task.
+ * Represents a row from the `commitments` view.
+ */
+export type Commitment = Routine | Task;
