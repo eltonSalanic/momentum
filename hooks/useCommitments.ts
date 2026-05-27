@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
-import { Commitment, COMMITMENT_TYPES } from '../types/commitment';
+import {
+  Commitment,
+  COMMITMENT_TYPES,
+  CheckInState,
+  CheckInRow,
+} from '../types/commitment';
 
 /** Monday = 0 … Sunday = 6  (matches the Edge Function daysMap) */
 const DAYS_MAP: Record<string, number> = {
@@ -14,17 +19,7 @@ const DAYS_MAP: Record<string, number> = {
   Sunday: 6,
 };
 
-interface CheckIn {
-  id: string;
-  goal_id: string;
-  check_in_date: string;
-}
-
-export interface TodayCommitment extends Commitment {
-  isCheckedIn: boolean;
-  checkInId: string | null;
-  isMissed: boolean;
-}
+export type TodayCommitment = Commitment & CheckInState;
 
 /**
  * Returns today's local date string (YYYY-MM-DD) and day index (Mon=0).
@@ -71,7 +66,10 @@ export function useCommitments() {
       return;
     }
 
-    const allCommitments = (allData ?? []) as Commitment[];
+    // View row fields are nullable in the generated types because the view
+    // is a UNION; cast to our discriminated `Commitment` union (each row is
+    // guaranteed to be either a fully-populated Routine or Task shape).
+    const allCommitments = (allData ?? []) as unknown as Commitment[];
     setCommitments(allCommitments);
 
     // Fetch today's check-ins for routines (tasks use checked_in boolean directly)
@@ -85,7 +83,7 @@ export function useCommitments() {
       console.error('Error fetching check-ins:', checkInsError);
     }
 
-    const todayCheckIns = (checkIns ?? []) as CheckIn[];
+    const todayCheckIns: CheckInRow[] = checkIns ?? [];
     // Maps routine_id → check_in row id (for routines only)
     const checkInMap = new Map(todayCheckIns.map((ci) => [ci.goal_id, ci.id]));
 

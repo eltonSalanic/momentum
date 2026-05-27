@@ -152,6 +152,7 @@ export default function SettingsScreen() {
 
   // Profile save logic
   const handleSaveProfile = async () => {
+    if (!user) return;
     if (!firstName.trim() || !lastName.trim()) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       Alert.alert('Validation Error', 'First name and Last name cannot be empty.');
@@ -169,7 +170,7 @@ export default function SettingsScreen() {
           timezone: selectedTimezone,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', user?.id);
+        .eq('id', user.id);
 
       if (error) throw error;
 

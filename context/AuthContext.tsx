@@ -1,16 +1,9 @@
 import { Session, User } from '@supabase/supabase-js';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import type { ProfileRow } from '../types/commitment';
 
-interface Profile {
-  id: string;
-  first_name: string | null;
-  last_name: string | null;
-  has_completed_onboarding: boolean;
-  timezone: string | null;
-  stripe_customer_id: string | null;
-  has_payment_method: boolean;
-}
+export type Profile = ProfileRow;
 
 interface AuthContextValue {
   session: Session | null;

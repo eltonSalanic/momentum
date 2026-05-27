@@ -25,6 +25,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { supabase } from '../../../lib/supabase';
 import {
   COMMITMENT_TYPES,
+  Commitment,
   CommitmentType,
   DEADLINE_TYPES,
   DeadlineType,
@@ -78,32 +79,36 @@ export default function EditCommitmentScreen() {
 
       if (error) throw error;
 
-      if (data) {
-        setTitle(data.title);
-        setType(data.type);
-        setAmountCents(data.amount_cents);
-        setIsPaused(data.status === 'paused');
+      // The `commitments` view fields are nullable in generated types
+      // (because the view is a UNION). At runtime each row is a complete
+      // Routine or Task shape — narrow via discriminated union.
+      const commitment = data as Commitment | null;
+
+      if (commitment) {
+        setTitle(commitment.title);
+        setType(commitment.type);
+        setAmountCents(commitment.amount_cents);
+        setIsPaused(commitment.status === 'paused');
         
-        // Check if presets contain stakes amount, if not populate customStake text
-        const amountCentsVal = data.amount_cents;
+        const amountCentsVal = commitment.amount_cents;
         const matchingPreset = STAKE_PRESETS.find((p) => p * 100 === amountCentsVal);
         if (!matchingPreset) {
           setCustomStake((amountCentsVal / 100).toString());
         }
 
-        if (data.check_in_days) {
-          setCheckInDays(data.check_in_days);
+        if (commitment.type === COMMITMENT_TYPES.ROUTINE && commitment.check_in_days) {
+          setCheckInDays(commitment.check_in_days);
         }
-        if (data.due_date) {
-          setDueDate(new Date(data.due_date + 'T00:00:00'));
-          const parts = data.due_date.split('-');
+        if (commitment.type === COMMITMENT_TYPES.TASK && commitment.due_date) {
+          setDueDate(new Date(commitment.due_date + 'T00:00:00'));
+          const parts = commitment.due_date.split('-');
           setCalMonth(parseInt(parts[1], 10) - 1);
           setCalYear(parseInt(parts[0], 10));
         }
-        setDeadlineType(data.deadline_type);
-        
-        if (data.deadline_time) {
-          const [hStr, mStr] = data.deadline_time.split(':');
+        setDeadlineType(commitment.deadline_type);
+
+        if (commitment.deadline_time) {
+          const [hStr, mStr] = commitment.deadline_time.split(':');
           let hours = parseInt(hStr, 10);
           const period = hours >= 12 ? 'PM' : 'AM';
           const displayH = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
@@ -267,7 +272,10 @@ export default function EditCommitmentScreen() {
           })
           .eq('id', id));
       } else {
-        const formattedDate = dueDate ? dueDate.toISOString().split('T')[0] : null;
+        if (!dueDate) {
+          throw new Error('Please select a deadline date for your Task.');
+        }
+        const formattedDate = dueDate.toISOString().split('T')[0];
         ({ error } = await supabase
           .from('tasks')
           .update({
@@ -302,17 +310,17 @@ export default function EditCommitmentScreen() {
     try {
       const nextStatus = isPaused ? 'active' : 'paused';
       const pausedAt = isPaused ? null : new Date().toISOString();
+      const patch = {
+        status: nextStatus,
+        paused_at: pausedAt,
+        updated_at: new Date().toISOString(),
+      };
 
-      // Branch on type to update the correct table
-      const table = type === COMMITMENT_TYPES.ROUTINE ? 'routines' : 'tasks';
-      const { error } = await supabase
-        .from(table)
-        .update({
-          status: nextStatus,
-          paused_at: pausedAt,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id);
+      // Branch on type so the typed client narrows to the right table shape
+      const { error } =
+        type === COMMITMENT_TYPES.ROUTINE
+          ? await supabase.from('routines').update(patch).eq('id', id)
+          : await supabase.from('tasks').update(patch).eq('id', id);
 
       if (error) throw error;
 

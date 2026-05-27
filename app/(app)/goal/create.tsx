@@ -254,7 +254,10 @@ export default function CreateCommitmentScreen() {
           status: 'active',
         }));
       } else {
-        const formattedDate = dueDate ? dueDate.toISOString().split('T')[0] : null;
+        if (!dueDate) {
+          throw new Error('Please select a deadline date for your Task.');
+        }
+        const formattedDate = dueDate.toISOString().split('T')[0];
         ({ error } = await supabase.from('tasks').insert({
           user_id: user.id,
           title: title.trim(),
