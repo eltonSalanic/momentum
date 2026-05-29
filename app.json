@@ -10,7 +10,10 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "dev.stalld.app"
+      "bundleIdentifier": "com.stalld.app.dev",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -19,7 +22,7 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "package": "dev.stalld.app",
+      "package": "com.stalld.app.dev",
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },

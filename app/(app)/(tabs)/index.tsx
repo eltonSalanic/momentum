@@ -12,6 +12,7 @@ import { CommitmentRow } from '../../../components/home/CommitmentRow';
 import { theme } from '../../../constants/theme';
 import { useAuth } from '../../../context/AuthContext';
 import { useCommitments } from '../../../hooks/useCommitments';
+import { useNotification } from '../../../context/NotifcationContext';
 import { COMMITMENT_TYPES } from '../../../types/commitment';
 
 const DAYS_OF_WEEK = [
@@ -36,6 +37,7 @@ function getGreetingDate(): string {
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { profile } = useAuth();
+  const { expoPushToken, notification } = useNotification();
   const {
     commitments,
     todayCommitments,
@@ -145,6 +147,23 @@ export default function HomeScreen() {
             {isRefreshing ? 'Syncing...' : 'Pull to refresh'}
           </ThemedText>
         </View>
+      </View>
+
+      {/* Push Notification Debug Info */}
+      <View style={styles.debugBox}>
+        <ThemedText variant="labelSm" style={styles.debugTitle}>
+          EXPO PUSH TOKEN
+        </ThemedText>
+        <ThemedText variant="bodyMd" style={styles.debugText} numberOfLines={1} ellipsizeMode="tail">
+          {expoPushToken ?? 'Loading/No token available...'}
+        </ThemedText>
+        
+        <ThemedText variant="labelSm" style={[styles.debugTitle, { marginTop: 8 }]}>
+          LATEST PUSH NOTIFICATION TITLE
+        </ThemedText>
+        <ThemedText variant="bodyMd" style={styles.debugText}>
+          {notification?.request?.content?.title ?? 'No notification received yet'}
+        </ThemedText>
       </View>
 
       {/* Section 1: Today */}
@@ -437,5 +456,24 @@ const styles = StyleSheet.create({
   emptyDayText: {
     color: theme.colors.secondary,
     fontSize: 11,
+  },
+  debugBox: {
+    backgroundColor: 'rgba(185, 199, 228, 0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(185, 199, 228, 0.15)',
+    borderRadius: theme.radius.xl,
+    padding: 16,
+    marginBottom: theme.spacing.lg,
+  },
+  debugTitle: {
+    color: theme.colors.primary,
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 10,
+    letterSpacing: 0.5,
+  },
+  debugText: {
+    color: '#E2E2E2',
+    fontFamily: 'Inter_400Regular',
+    marginTop: 2,
   },
 });
