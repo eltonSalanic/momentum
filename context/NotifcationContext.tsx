@@ -7,6 +7,7 @@ interface NotificationContextType {
   devicePushToken: string | null;
   notification: Notifications.Notification | null;
   error: Error | null;
+  isRegistering: boolean;
 }
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -28,11 +29,18 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   const [devicePushToken, setDevicePushToken] = useState<string | null>(null);
   const [notification, setNotification] = useState<Notifications.Notification | null>(null);
   const [error, setError] = useState<Error | null>(null);
+  const [isRegistering, setIsRegistering] = useState(true);
 
   useEffect(() => {
     registerForPushNotificationsAsync().then(
-      (token) => setExpoPushToken(token),
-      (error) => setError(error),
+      (token) => {
+        setExpoPushToken(token);
+        setIsRegistering(false);
+      },
+      (err) => {
+        setError(err instanceof Error ? err : new Error(String(err)));
+        setIsRegistering(false);
+      },
     );
 
     Notifications.getDevicePushTokenAsync().then(
@@ -63,7 +71,9 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   }, []);
 
   return (
-    <NotificationContext.Provider value={{ expoPushToken, devicePushToken, notification, error }}>
+    <NotificationContext.Provider
+      value={{ expoPushToken, devicePushToken, notification, error, isRegistering }}
+    >
       {children}
     </NotificationContext.Provider>
   );

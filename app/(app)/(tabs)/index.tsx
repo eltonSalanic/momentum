@@ -12,6 +12,7 @@ import { CommitmentRow } from '../../../components/home/CommitmentRow';
 import { theme } from '../../../constants/theme';
 import { useAuth } from '../../../context/AuthContext';
 import { useCommitments } from '../../../hooks/useCommitments';
+// PUSH_TOKEN_DEBUG: remove import below when deleting token debug UI
 import { useNotification } from '../../../context/NotifcationContext';
 import { COMMITMENT_TYPES } from '../../../types/commitment';
 
@@ -34,10 +35,55 @@ function getGreetingDate(): string {
   });
 }
 
+// PUSH_TOKEN_DEBUG_START — helper for token debug panel only; remove with debug UI
+type PushDebugTone = 'pending' | 'success' | 'error' | 'idle';
+
+function getPushTokenDisplay(
+  expoPushToken: string | null,
+  error: Error | null,
+  isRegistering: boolean,
+): { status: string; tokenLine: string; tone: PushDebugTone } {
+  if (isRegistering) {
+    return {
+      status: 'Registering…',
+      tokenLine: 'Waiting for Expo push token (grant permission if prompted).',
+      tone: 'pending',
+    };
+  }
+
+  if (error) {
+    return {
+      status: 'Registration failed',
+      tokenLine: error.message,
+      tone: 'error',
+    };
+  }
+
+  const token = expoPushToken?.trim();
+  if (token) {
+    return {
+      status: 'Token received',
+      tokenLine: token,
+      tone: 'success',
+    };
+  }
+
+  return {
+    status: 'No token',
+    tokenLine:
+      'Expo did not return a push token. On Android Expo Go, push is not supported — use a dev build.',
+    tone: 'idle',
+  };
+}
+// PUSH_TOKEN_DEBUG_END
+
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const { profile } = useAuth();
-  const { expoPushToken, notification } = useNotification();
+  // PUSH_TOKEN_DEBUG_START — hook usage for token debug panel only
+  const { expoPushToken, devicePushToken, notification, error, isRegistering } = useNotification();
+  const pushDebug = getPushTokenDisplay(expoPushToken, error, isRegistering);
+  // PUSH_TOKEN_DEBUG_END
   const {
     commitments,
     todayCommitments,
@@ -149,22 +195,60 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* Push Notification Debug Info */}
+      {/* PUSH_TOKEN_DEBUG_START — entire block is token/status display only; remove before production */}
       <View style={styles.debugBox}>
-        <ThemedText variant="labelSm" style={styles.debugTitle}>
-          EXPO PUSH TOKEN
+        <ThemedText variant="labelSm" style={styles.debugSectionTitle}>
+          PUSH NOTIFICATIONS (DEBUG)
         </ThemedText>
-        <ThemedText variant="bodyMd" style={styles.debugText} numberOfLines={1} ellipsizeMode="tail">
-          {expoPushToken ?? 'Loading/No token available...'}
+        <ThemedText variant="bodyMd" style={styles.debugHint}>
+          Token or registration status should display below.
         </ThemedText>
-        
-        <ThemedText variant="labelSm" style={[styles.debugTitle, { marginTop: 8 }]}>
-          LATEST PUSH NOTIFICATION TITLE
-        </ThemedText>
-        <ThemedText variant="bodyMd" style={styles.debugText}>
-          {notification?.request?.content?.title ?? 'No notification received yet'}
-        </ThemedText>
+
+        <View style={styles.debugRow}>
+          <ThemedText variant="labelSm" style={styles.debugLabel}>
+            STATUS
+          </ThemedText>
+          <ThemedText
+            variant="bodyMd"
+            style={[
+              styles.debugValue,
+              pushDebug.tone === 'success' && styles.debugValueSuccess,
+              pushDebug.tone === 'error' && styles.debugValueError,
+              pushDebug.tone === 'pending' && styles.debugValuePending,
+            ]}
+          >
+            {pushDebug.status}
+          </ThemedText>
+        </View>
+
+        <View style={styles.debugTokenBox}>
+          <ThemedText variant="labelSm" style={styles.debugLabel}>
+            EXPO PUSH TOKEN
+          </ThemedText>
+          <ThemedText variant="bodyMd" style={styles.debugTokenText} selectable>
+            {pushDebug.tokenLine}
+          </ThemedText>
+        </View>
+
+        <View style={styles.debugRow}>
+          <ThemedText variant="labelSm" style={styles.debugLabel}>
+            DEVICE PUSH TOKEN
+          </ThemedText>
+          <ThemedText variant="bodyMd" style={styles.debugValue} selectable>
+            {devicePushToken?.trim() || 'Not available yet'}
+          </ThemedText>
+        </View>
+
+        <View style={styles.debugRow}>
+          <ThemedText variant="labelSm" style={styles.debugLabel}>
+            LATEST NOTIFICATION
+          </ThemedText>
+          <ThemedText variant="bodyMd" style={styles.debugValue}>
+            {notification?.request?.content?.title ?? 'None received yet'}
+          </ThemedText>
+        </View>
       </View>
+      {/* PUSH_TOKEN_DEBUG_END */}
 
       {/* Section 1: Today */}
       <View style={styles.section}>
@@ -457,6 +541,7 @@ const styles = StyleSheet.create({
     color: theme.colors.secondary,
     fontSize: 11,
   },
+  // PUSH_TOKEN_DEBUG_START — styles for token debug panel only
   debugBox: {
     backgroundColor: 'rgba(185, 199, 228, 0.05)',
     borderWidth: 1,
@@ -464,16 +549,56 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.xl,
     padding: 16,
     marginBottom: theme.spacing.lg,
+    gap: theme.spacing.sm,
   },
-  debugTitle: {
+  debugSectionTitle: {
     color: theme.colors.primary,
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11,
+    letterSpacing: 1,
+  },
+  debugHint: {
+    color: theme.colors.textMuted,
+    fontSize: 13,
+    lineHeight: 18,
+  },
+  debugRow: {
+    gap: 4,
+  },
+  debugLabel: {
+    color: theme.colors.secondary,
     fontFamily: 'Inter_600SemiBold',
     fontSize: 10,
     letterSpacing: 0.5,
   },
-  debugText: {
+  debugValue: {
     color: '#E2E2E2',
     fontFamily: 'Inter_400Regular',
-    marginTop: 2,
+    fontSize: 13,
+    lineHeight: 18,
   },
+  debugValueSuccess: {
+    color: '#6EE7B7',
+  },
+  debugValueError: {
+    color: theme.colors.error,
+  },
+  debugValuePending: {
+    color: theme.colors.primary,
+  },
+  debugTokenBox: {
+    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+    borderRadius: theme.radius.md,
+    borderWidth: 1,
+    borderColor: theme.colors.outline,
+    padding: theme.spacing.sm,
+    gap: 4,
+  },
+  debugTokenText: {
+    color: '#E2E2E2',
+    fontFamily: 'Inter_400Regular',
+    fontSize: 12,
+    lineHeight: 17,
+  },
+  // PUSH_TOKEN_DEBUG_END
 });
