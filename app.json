@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "momentum",
+    "name": "stalld",
     "slug": "momentum",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "momentum",
+    "scheme": "stalld",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -48,7 +48,7 @@
       [
         "@stripe/stripe-react-native",
         {
-          "merchantIdentifier": "merchant.com.momentum",
+          "merchantIdentifier": "merchant.com.stalld",
           "enableGooglePay": true
         }
       ]
