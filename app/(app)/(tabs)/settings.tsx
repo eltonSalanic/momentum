@@ -201,7 +201,7 @@ export default function SettingsScreen() {
       const { error: initError } = await initPaymentSheet({
         setupIntentClientSecret: funcData.clientSecret,
         merchantDisplayName: process.env.EXPO_PUBLIC_APP_NAME ?? 'Momentum',
-        returnURL: 'momentum://stripe-redirect',
+        returnURL: 'stalld://stripe-redirect',
         style: 'alwaysDark',
         appearance: {
           colors: {
