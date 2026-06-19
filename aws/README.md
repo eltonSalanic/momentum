@@ -48,8 +48,19 @@ Resource Groups filtering.
 
 ## Prerequisites
 
-- Node 20+, an AWS account, and AWS credentials configured (e.g. `aws configure`).
-- AWS CDK bootstrap once per account/region: `npx cdk bootstrap`.
+- Node 20+ and an AWS account.
+- AWS CLI authenticated. If you use IAM Identity Center / SSO:
+  ```bash
+  aws login
+  aws sts get-caller-identity   # should print your account id
+  ```
+  CDK resolves account/region from your active CLI profile automatically. To pin
+  them explicitly:
+  ```bash
+  export CDK_DEFAULT_ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
+  export CDK_DEFAULT_REGION=us-east-1
+  ```
+- AWS CDK bootstrap once per account/region: `npx cdk bootstrap`
 
 ## Deploy (dev)
 

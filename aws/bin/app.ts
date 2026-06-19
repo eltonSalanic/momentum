@@ -2,17 +2,14 @@
 import 'source-map-support/register';
 import { App, Tags } from 'aws-cdk-lib';
 import { getConfig } from '../lib/config';
+import { resolveDeployEnv } from '../lib/deploy-env';
 import { SecretsStack } from '../lib/secrets-stack';
 import { ApiStack } from '../lib/api-stack';
 import { BillingStack } from '../lib/billing-stack';
 
 const app = new App();
 const config = getConfig(app);
-
-const env = {
-  account: process.env.CDK_DEFAULT_ACCOUNT,
-  region: process.env.CDK_DEFAULT_REGION,
-};
+const env = resolveDeployEnv();
 
 const secrets = new SecretsStack(app, `stalld-Secrets-${config.envName}`, {
   env,
