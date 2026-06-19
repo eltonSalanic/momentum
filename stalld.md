@@ -1,4 +1,4 @@
-I am creating an app called “Momentum” using React Native, Typescript, and Supabase. It helps procrastinators stay consistent by attaching real consequences to unfinished commitments.
+I am creating an app called “stalld” using React Native, Typescript, and Supabase. It helps procrastinators stay consistent by attaching real consequences to unfinished commitments.
 
 The idea is to have users create "Commitments" (either recurring "Routines" or one-time "Tasks") that represent things they want to stay consistent on or accomplish. They must check-in when they've completed the commitment for the day or deadline. If they don't check-in before their predetermined deadline (either End of Day or a Specific Time), they get charged a penalty amount they predetermine when creating the commitment.
 
@@ -125,7 +125,7 @@ Always use the Expo docs MCP to use Expo SDK v54 best practices. If you don't ha
 
 ### Naming & Tone Conventions (Commitment Theme)
 
-To maintain a highly professional, intentional, and high-stakes branding tone throughout Momentum:
+To maintain a highly professional, intentional, and high-stakes branding tone throughout stalld:
 
 1. **Commitment Terminology:** Never use soft or casual terms like "Goal", "Habit", or "Battle". Always use:
    - **Commitment:** The umbrella term for all active user commitment.

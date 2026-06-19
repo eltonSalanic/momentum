@@ -1,5 +1,5 @@
 ---
-name: Momentum
+name: stalld
 colors:
   surface: '#121414'
   surface-dim: '#121414'

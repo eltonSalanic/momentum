@@ -200,7 +200,7 @@ export function TodayCard({ commitment, onCheckIn }: TodayCardProps) {
             </View>
 
             <ThemedText variant="labelSm" style={styles.modalDisclaimer}>
-              Momentum relies on your honesty. Your stakes are{' '}
+              stalld relies on your honesty. Your stakes are{' '}
               {formatAmount(commitment.amount_cents)}.
             </ThemedText>
 

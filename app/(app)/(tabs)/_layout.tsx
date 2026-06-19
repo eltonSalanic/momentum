@@ -73,7 +73,7 @@ export default function TabsLayout() {
                   if (!profile?.has_payment_method) {
                     Alert.alert(
                       'Stakes Card Required',
-                      'Momentum attaches real consequences to commitments. Please register a payment method before setting a commitment.',
+                      'stalld attaches real consequences to commitments. Please register a payment method before setting a commitment.',
                       [
                         { text: 'Maybe Later', style: 'cancel' },
                         {

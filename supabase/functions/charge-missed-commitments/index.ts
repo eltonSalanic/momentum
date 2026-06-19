@@ -262,7 +262,7 @@ serve(async (req) => {
               payment_method: paymentMethodId as string,
               off_session: true,
               confirm: true,
-              description: `Momentum Penalty: Missed check-in for "${commitment.title}"`,
+              description: `stalld Penalty: Missed check-in for "${commitment.title}"`,
             });
 
             if (paymentIntent.status === 'succeeded') {

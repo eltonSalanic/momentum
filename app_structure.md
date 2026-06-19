@@ -1,4 +1,4 @@
-# Momentum — App Structure (MVP)
+# stalld — App Structure (MVP)
 
 > Expo Router file-based routing with route groups for auth gating.
 

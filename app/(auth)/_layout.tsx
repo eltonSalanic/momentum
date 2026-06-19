@@ -24,7 +24,7 @@ export default function AuthLayout() {
           <View style={styles.inner}>
             <Animated.View entering={FadeInLeft.duration(1500)} style={styles.header}>
               <ThemedText variant="display" color="primary">
-                Momentum
+                stalld
               </ThemedText>
               <ThemedText variant="bodyMd" color="secondary" style={styles.caption}>
                 stay consistent

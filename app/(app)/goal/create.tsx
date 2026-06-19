@@ -692,7 +692,7 @@ export default function CreateCommitmentScreen() {
               Review your commitment.
             </ThemedText>
             <ThemedText variant="bodyMd" style={styles.stepSubtitle}>
-              Make sure you can back this up. Integrity is the foundation of Momentum.
+              Make sure you can back this up. Integrity is the foundation of stalld.
             </ThemedText>
 
             <View style={styles.summaryCard}>
@@ -755,7 +755,7 @@ export default function CreateCommitmentScreen() {
             Stakes Required
           </ThemedText>
           <ThemedText variant="bodyLg" style={styles.lockSubtitle}>
-            Momentum helps you stay consistent by attaching real financial consequences to your
+            stalld helps you stay consistent by attaching real financial consequences to your
             commitments.
           </ThemedText>
           <ThemedText variant="bodyMd" style={styles.lockHint}>
