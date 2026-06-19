@@ -31,6 +31,7 @@ import { Input } from '../../../components/ui/Input';
 import { ThemedText } from '../../../components/ui/ThemedText';
 import { theme } from '../../../constants/theme';
 import { useAuth } from '../../../context/AuthContext';
+import { api } from '../../../lib/api';
 import { supabase } from '../../../lib/supabase';
 
 const COMMON_TIMEZONES = [
@@ -120,10 +121,10 @@ export default function SettingsScreen() {
     if (!profile?.stripe_customer_id) return;
     setIsLoadingCard(true);
     try {
-      const { data, error } = await supabase.functions.invoke('stripe-setup-intent', {
-        body: { action: 'get-payment-method' },
-      });
-      if (error) throw error;
+      const data = await api.post<{ card: { brand: string; last4: string } | null }>(
+        '/stripe/setup-intent',
+        { action: 'get-payment-method' },
+      );
       if (data && data.card) {
         setCardDetails({ brand: data.card.brand, last4: data.card.last4 });
       } else {
@@ -191,16 +192,13 @@ export default function SettingsScreen() {
     setIsStripeLoading(true);
 
     try {
-      // 1. Invoke stripe edge function to get setupintent secret
-      const { data: funcData, error: funcError } =
-        await supabase.functions.invoke('stripe-setup-intent');
-
-      if (funcError) throw funcError;
+      // 1. Call the AWS API to get a SetupIntent client secret
+      const funcData = await api.post<{ clientSecret: string }>('/stripe/setup-intent');
 
       // 2. Initialize payment sheet
       const { error: initError } = await initPaymentSheet({
         setupIntentClientSecret: funcData.clientSecret,
-        merchantDisplayName: process.env.EXPO_PUBLIC_APP_NAME ?? 'Momentum',
+        merchantDisplayName: process.env.EXPO_PUBLIC_APP_NAME ?? 'stalld',
         returnURL: 'stalld://stripe-redirect',
         style: 'alwaysDark',
         appearance: {
@@ -411,7 +409,7 @@ export default function SettingsScreen() {
             <TouchableOpacity
               style={styles.signOutBtn}
               onPress={() =>
-                Alert.alert('Sign Out', 'Are you sure you want to sign out of Momentum?', [
+                Alert.alert('Sign Out', 'Are you sure you want to sign out of stalld?', [
                   { text: 'Cancel', style: 'cancel' },
                   {
                     text: 'Sign Out',
