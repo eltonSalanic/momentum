@@ -37,6 +37,27 @@ EventBridge (hourly) --> sweep-scheduler --> SQS charge queue --> charge-worker 
 Lambdas talk to Supabase Postgres through the service-role key over HTTPS
 (PostgREST), so there is no VPC or DB connection pooling to manage.
 
+## Payment method policy (single card)
+
+Each user has **exactly one** payment method on file. Changing the card is a
+*replace*, not an *add*:
+
+- The app starts a Stripe **SetupIntent** (`POST /stripe/setup-intent`) and
+  collects the new card via the Payment Sheet.
+- On the `setup_intent.succeeded` webhook, `stripe-webhook` enforces the policy:
+  it sets the new payment method as the customer's
+  `invoice_settings.default_payment_method` and **detaches every other card** on
+  the customer, then flips `profiles.has_payment_method = true`.
+- `get-payment-method` returns the customer's **default** card (falling back to
+  the sole saved card), so the Settings UI always shows the card that will be
+  charged.
+- `charge-worker` charges the customer's default payment method, so penalties
+  always hit the most recently added card.
+
+> Because old cards are detached on every successful setup, the
+> `payment_method.detached` event re-checks remaining cards; the new card
+> survives, so `has_payment_method` stays `true`.
+
 ## CloudFormation stacks (per environment)
 
 - `stalld-Secrets-dev`

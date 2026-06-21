@@ -27,7 +27,7 @@ Must Haves
 - [x] Edit profile
   - [x] Change name
   - [x] Change timezone
-  - [x] Change payment method
+  - [x] Change payment method (single card: changing it replaces the previous card, sets the new one as default, and all penalties are charged to it)
 - [ ] Web App For Cancelling (In case users lose access to phone)
   - [ ] Logging in
   - [ ] Pause goal
