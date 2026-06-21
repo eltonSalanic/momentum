@@ -63,14 +63,28 @@ serve(async (req) => {
         });
       }
 
-      const paymentMethods = await stripe.paymentMethods.list({
-        customer: customerId,
-        type: 'card',
-        limit: 1,
-      });
+      // Prefer the customer's default card so the UI shows the exact card that
+      // penalty charges will use. Fall back to the only saved card otherwise.
+      const customer = await stripe.customers.retrieve(customerId);
+      const defaultPmId =
+        !('deleted' in customer) && customer.invoice_settings?.default_payment_method
+          ? (customer.invoice_settings.default_payment_method as string)
+          : null;
 
-      if (paymentMethods.data.length > 0) {
-        const card = paymentMethods.data[0].card;
+      let card = null;
+      if (defaultPmId) {
+        const pm = await stripe.paymentMethods.retrieve(defaultPmId);
+        card = pm.card ?? null;
+      } else {
+        const paymentMethods = await stripe.paymentMethods.list({
+          customer: customerId,
+          type: 'card',
+          limit: 1,
+        });
+        card = paymentMethods.data[0]?.card ?? null;
+      }
+
+      if (card) {
         return new Response(JSON.stringify({
           card: {
             brand: card.brand,

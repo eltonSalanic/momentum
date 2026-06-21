@@ -42,8 +42,35 @@ serve(async (req) => {
     if (event.type === 'setup_intent.succeeded') {
       const setupIntent = event.data.object as any;
       const stripeCustomerId = setupIntent.customer;
+      const newPaymentMethodId = setupIntent.payment_method;
 
-      if (stripeCustomerId) {
+      if (stripeCustomerId && newPaymentMethodId) {
+        console.log(`SetupIntent succeeded for customer: ${stripeCustomerId}. Enforcing single-card policy.`);
+
+        // Single-card policy: make the freshly saved card the default and
+        // detach every other previously saved card, so all future off-session
+        // penalty charges hit this one card.
+        await stripe.customers.update(stripeCustomerId, {
+          invoice_settings: { default_payment_method: newPaymentMethodId },
+        });
+
+        const existing = await stripe.paymentMethods.list({
+          customer: stripeCustomerId,
+          type: 'card',
+        });
+        await Promise.all(
+          existing.data
+            .filter((pm) => pm.id !== newPaymentMethodId)
+            .map((pm) => stripe.paymentMethods.detach(pm.id)),
+        );
+
+        const { error } = await supabaseAdmin
+          .from('profiles')
+          .update({ has_payment_method: true })
+          .eq('stripe_customer_id', stripeCustomerId);
+
+        if (error) throw error;
+      } else if (stripeCustomerId) {
         console.log(`SetupIntent succeeded for customer: ${stripeCustomerId}. Toggling has_payment_method to true.`);
         const { error } = await supabaseAdmin
           .from('profiles')

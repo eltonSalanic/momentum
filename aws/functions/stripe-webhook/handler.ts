@@ -43,12 +43,38 @@ export const handler = async (
     const supabase = await getSupabaseAdmin();
 
     if (stripeEvent.type === 'setup_intent.succeeded') {
-      const setupIntent = stripeEvent.data.object as { customer?: string };
-      if (setupIntent.customer) {
+      const setupIntent = stripeEvent.data.object as {
+        customer?: string;
+        payment_method?: string;
+      };
+      const customerId = setupIntent.customer;
+      const newPaymentMethodId = setupIntent.payment_method;
+
+      if (customerId && newPaymentMethodId) {
+        // Single-card policy: the freshly saved card becomes the customer's
+        // default and every other previously saved card is detached, so all
+        // future off-session penalty charges hit this one card.
+        await stripe.customers.update(customerId, {
+          invoice_settings: { default_payment_method: newPaymentMethodId },
+        });
+
+        const existing = await stripe.paymentMethods.list({ customer: customerId, type: 'card' });
+        await Promise.all(
+          existing.data
+            .filter((pm) => pm.id !== newPaymentMethodId)
+            .map((pm) => stripe.paymentMethods.detach(pm.id)),
+        );
+
         const { error } = await supabase
           .from('profiles')
           .update({ has_payment_method: true })
-          .eq('stripe_customer_id', setupIntent.customer);
+          .eq('stripe_customer_id', customerId);
+        if (error) throw error;
+      } else if (customerId) {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ has_payment_method: true })
+          .eq('stripe_customer_id', customerId);
         if (error) throw error;
       }
     } else if (stripeEvent.type === 'payment_method.attached') {
