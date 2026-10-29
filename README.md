@@ -1,5 +1,9 @@
 # Welcome to your Expo app 👋
 
+> **Picking this project back up?** The hosted Supabase project was taken down
+> around 2026-10-29 (structure kept, no data). Follow
+> [`supabase/RESTORE.md`](supabase/RESTORE.md) to bring the backend back.
+
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
 ## Get started
